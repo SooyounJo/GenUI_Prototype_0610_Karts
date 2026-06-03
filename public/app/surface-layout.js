@@ -584,9 +584,9 @@ var TEST3_MUSIC_PRE_DELAY_MS = Math.round(TEST3_MUSIC_MOTION_MS * 0.10);
 /* Align with CSS keyframes that use animation-delay: --test3-music-spawn-delay-ms. */
 var TEST3_MUSIC_EXPAND_START_MS =
   TEST3_MUSIC_MOUNT_DELAY_MS + Math.round(TEST3_MUSIC_MOTION_MS * 0.57);
-var TEST3_MUSIC_EXPAND_DUR_MS = Math.round(TEST3_MUSIC_MOTION_MS * 0.11);
+var TEST3_MUSIC_EXPAND_DUR_MS = Math.round(TEST3_MUSIC_MOTION_MS * 0.05);
 var TEST3_MUSIC_EXPAND_END_MS =
-  TEST3_MUSIC_MOUNT_DELAY_MS + Math.round(TEST3_MUSIC_MOTION_MS * 0.68);
+  TEST3_MUSIC_MOUNT_DELAY_MS + Math.round(TEST3_MUSIC_MOTION_MS * 0.62);
 var TEST3_MUSIC_FILL_START_MS =
   TEST3_MUSIC_MOUNT_DELAY_MS + Math.round(TEST3_MUSIC_MOTION_MS * 0.14);
 var TEST3_MUSIC_RESOLVE_MS =
@@ -599,11 +599,12 @@ var TEST3_MUSIC_SETTLE_TEXT_STAGGER_MS = 0;
 var TEST3_MUSIC_SETTLE_TEXT_DUR_MS = 560;
 var TEST3_MUSIC_SETTLE_TAIL_MS = 60;
 var TEST3_MUSIC_SETTLE_REVEAL_MS = TEST3_MUSIC_SETTLE_TEXT_DUR_MS;
+/* goal map stagger: last delay 0.9s + test3GoalDown 0.6s + buffer */
+var TEST3_MUSIC_PART_STAGGER_END_MS = 1600;
 var TEST3_MUSIC_SETTLE_MS =
   TEST3_MUSIC_SETTLE_ACTIVE_DELAY_MS +
   TEST3_MUSIC_SETTLE_TEXT_STAGGER_MS +
-  TEST3_MUSIC_SETTLE_TEXT_DUR_MS +
-  TEST3_MUSIC_SETTLE_TAIL_MS;
+  TEST3_MUSIC_PART_STAGGER_END_MS;
 var TEST3_MUSIC_GLOW_HOLD_MS = 1000;
 var TEST3_MUSIC_GLOW_FADE_MS = 1000;
 var TEST3_MUSIC_FILL_FADE_MS = 1400;
@@ -6123,16 +6124,95 @@ window.renderAtomicForRole = function renderAtomicForRole(comp, rect) {
           '</svg>' +
         '</button>';
       var compactHeaderHtml = isTest3Music
-        ? ('<div class="dot-music3__headerRow dot-music3__compactHeader test3-music-part" data-test3-music-part-idx="0" aria-hidden="true">' +
+        ? ('<div class="dot-music3__headerRow dot-music3__compactHeader test3-music-enter-part" data-test3-music-part-idx="0" aria-hidden="true">' +
             '<span class="dot-music3__spotify" aria-hidden="true">' + TEST3_SPOTIFY_ICON_HTML + '</span>' +
             '<span class="dot-music3__mediaPill">미디어 출력</span>' +
           '</div>')
         : '';
+      var test3EnterPartClass = function (idx) {
+        return isTest3Music ? ' test3-music-enter-part"' + ' data-test3-music-part-idx="' + idx + '"' : '"';
+      };
+      var nameBlockHtml =
+        '<div class="dot-music3__name' + test3EnterPartClass(1) + '>' +
+          '<div class="dot-music3__name-inner">' +
+            '<span class="dot-music3__name-text">' + subtitle3 + '</span>' +
+            '<span class="dot-music3__name-text" aria-hidden="true">' + subtitle3 + '</span>' +
+          '</div>' +
+        '</div>';
+      var timesBlockHtml =
+        '<div class="dot-music3__times' + (isTest3Music ? '"' : test3EnterPartClass(2)) + ' aria-hidden="true">' +
+          '<span class="dot-music3__time--current">' + (isTest3Music ? '01:35' : '0:00') + '</span>' +
+          '<span class="dot-music3__time--sep"> / </span>' +
+          '<span class="dot-music3__time--total">' + (isTest3Music ? '02:30' : '3:00') + '</span>' +
+        '</div>';
+      var barBlockHtml =
+        '<div class="dot-music__bar dot-music__bar--wide dot-music3__bar' + test3EnterPartClass(1) + ' style="--bar-w:' + barW3 + 'px;--bar-track:' + barTrack3 + 'px;">' +
+          '<div class="dot-music__barFill" aria-hidden="true"></div>' +
+          '<div class="dot-music__barTrack" aria-hidden="true"></div>' +
+        '</div>';
+      var transportBlockHtml = isTest3Music
+        ? ('<div class="dot-music3__transport dot-music3__transport--interactive" aria-hidden="true">' +
+            '<span class="dot-music3__transportSide dot-music3__transportSide--prev" aria-hidden="true">' +
+              '<svg width="11" height="16" viewBox="0 0 10.4248 14.4799" fill="none" aria-hidden="true">' +
+                '<path d="M0.893555 1.75699C0.400126 1.75699 0 2.15712 0 2.65055V14.5627C0.000232513 15.0559 0.40027 15.4562 0.893555 15.4562C1.38671 15.4561 1.78688 15.0558 1.78711 14.5627V9.99527L8.57227 14.5197C9.36382 15.0474 10.4246 14.4797 10.4248 13.5285V3.68473C10.4246 2.73344 9.36384 2.1658 8.57227 2.69352L1.78711 7.21695V2.65055C1.78711 2.15722 1.38685 1.75715 0.893555 1.75699Z" fill="#4C5B17"/>' +
+              '</svg>' +
+            '</span>' +
+            '<button type="button" class="dot-music3__transportPlay" data-music-playing="1" aria-label="Pause">' +
+              '<svg class="dot-music3__transportIcon dot-music3__transportIcon--play" width="14" height="18" viewBox="0 0 13.7123 16.8256" fill="none" aria-hidden="true">' +
+                '<path d="M0.712891 15.7178V1.10879C0.712891 0.071902 1.85762 -0.556488 2.73242 0.00021L13.4252 6.80471C14.2366 7.32107 14.2366 8.50556 13.4252 9.02192L2.73242 15.8264C1.85762 16.3831 0.712891 15.7547 0.712891 14.7178Z" fill="#4C5B17"/>' +
+              '</svg>' +
+              '<svg class="dot-music3__transportIcon dot-music3__transportIcon--pause" width="14" height="16" viewBox="0 0 14 16" fill="none" aria-hidden="true">' +
+                '<rect x="1" y="0" width="4" height="16" rx="1" fill="#4C5B17"/>' +
+                '<rect x="9" y="0" width="4" height="16" rx="1" fill="#4C5B17"/>' +
+              '</svg>' +
+            '</button>' +
+            '<span class="dot-music3__transportSide dot-music3__transportSide--next" aria-hidden="true">' +
+              '<svg width="11" height="16" viewBox="0 0 10.4268 14.4799" fill="none" aria-hidden="true">' +
+                '<path d="M9.5332 1.75699C10.0266 1.75702 10.4268 2.15714 10.4268 2.65055V14.5627C10.4268 15.0561 10.0266 15.4562 9.5332 15.4562C9.03981 15.4562 8.63965 15.0561 8.63965 14.5627V9.9943L1.85352 14.5197C1.06197 15.0475 0.00109863 14.4799 0.00109863 13.5285V3.6857C0.00109863 2.73427 1.06197 2.16673 1.85352 2.69449L8.63965 7.21793V2.65055C8.63965 2.15712 9.03981 1.75699 9.5332 1.75699Z" fill="#4C5B17"/>' +
+              '</svg>' +
+            '</span>' +
+          '</div>')
+        : '<div class="dot-music3__transport" aria-hidden="true"></div>';
+      var controlsBlockHtml = isTest3Music
+        ? ('<div class="dot-music3__controls' + test3EnterPartClass(2) + ' aria-hidden="true">' +
+            timesBlockHtml +
+            transportBlockHtml +
+          '</div>')
+        : (timesBlockHtml + transportBlockHtml);
+      if (isTest3Music) {
+        return '' +
+          '<div class="dot-card dot-music dot-music3 dot-music3--icon" data-state="' + (mv3.state || 'idle') + '">' +
+            compactHeaderHtml +
+            '<div class="dot-music3__title test3-music-enter-part" data-test3-music-part-idx="0" data-test3-music-part-order="1">' + safeTitle + '</div>' +
+            '<div class="dot-music3__top">' +
+              '<div class="dot-music3__icon">' +
+                renderTest3MusicDiscHtml() +
+                '<span class="dot-music3__iconBg"></span>' +
+                playPauseBtnHtml +
+                '<svg class="dot-music3__noteSvg" width="32" height="32" viewBox="-2 -2 68 68" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="display:none"></svg>' +
+              '</div>' +
+            '</div>' +
+            lyricsBlockHtml +
+            '<div class="dot-music3__playlistStack">' +
+              _test3MusicPlaylistPillHtml('primary') +
+              _test3MusicPlaylistPillHtml('secondary', '쿨다운 스트레치', '6곡 · 24분 08초', 'cooldown') +
+            '</div>' +
+            '<div class="dot-music3__foldTitle" aria-hidden="true">' + String(foldTitle3).replace(/\n/g, '<br/>') + '</div>' +
+            '<div class="dot-music__bottom dot-music3__bottom">' +
+              '<div class="dot-music3__nameRow">' + nameBlockHtml + '</div>' +
+              barBlockHtml +
+              controlsBlockHtml +
+              (isTest3Lyrics
+                ? '<div class="dot-music3__albumCredit" aria-hidden="true">Hurry Up, We\'re Dreaming.</div>'
+                : '') +
+            '</div>' +
+          '</div>';
+      }
       return '' +
         '<div class="dot-card dot-music dot-music3 dot-music3--icon" data-state="' + (mv3.state || 'idle') + '">' +
           compactHeaderHtml +
           '<div class="dot-music3__top">' +
-            '<div class="dot-music3__icon test3-music-part" data-test3-music-part-idx="0">' +
+            '<div class="dot-music3__icon">' +
               (isTest3Music ? renderTest3MusicDiscHtml() : '') +
               '<span class="dot-music3__iconBg"></span>' +
               playPauseBtnHtml +
@@ -6184,19 +6264,10 @@ window.renderAtomicForRole = function renderAtomicForRole(comp, rect) {
                 '<circle cx="52.39" cy="61.45" r="3.5" fill="#FFFFFF"/>' +
               '</svg>' +
             '</div>' +
-            '<div class="dot-music3__title test3-music-part" data-test3-music-part-idx="0">' + safeTitle + '</div>' +
+            '<div class="dot-music3__title">' + safeTitle + '</div>' +
           '</div>' +
-          // Lyrics block — hidden by default, surfaced when the user taps
-          // the card to enter `data-music-state="lyrics"`. The two-step
-          // tap cycle is: normal → lyrics (tap 1) → square (tap 2) →
-          // normal (tap 3). Cycle handler lives in surface-layout.js.
           lyricsBlockHtml +
-          (isTest3Music
-            ? ('<div class="dot-music3__playlistStack test3-music-part" data-test3-music-part-idx="0">' +
-                _test3MusicPlaylistPillHtml('primary') +
-                _test3MusicPlaylistPillHtml('secondary', '쿨다운 스트레치', '6곡 · 24분 08초', 'cooldown') +
-              '</div>')
-            : ('<div class="dot-music3__playlistPill" aria-hidden="true">' +
+          ('<div class="dot-music3__playlistPill" aria-hidden="true">' +
                 '<span class="dot-music3__playlistThumb" aria-hidden="true">' +
                   '<span class="dot-music3__playlistThumbBadge" aria-hidden="true">' + TEST3_SPOTIFY_ICON_HTML + '</span>' +
                 '</span>' +
@@ -6205,7 +6276,7 @@ window.renderAtomicForRole = function renderAtomicForRole(comp, rect) {
                   '<span class="dot-music3__playlistMeta">10곡 · 38분 34초</span>' +
                 '</div>' +
                 '<span class="dot-music3__playlistChevron" aria-hidden="true"></span>' +
-              '</div>')) +
+              '</div>') +
           '<div class="dot-music3__foldTitle" aria-hidden="true">' + String(foldTitle3).replace(/\n/g, '<br/>') + '</div>' +
           '<div class="dot-music__bottom dot-music3__bottom">' +
             // Name row pairs the artist/song marquee on the left with
@@ -6243,7 +6314,7 @@ window.renderAtomicForRole = function renderAtomicForRole(comp, rect) {
                       '<path d="M0.893555 1.75699C0.400126 1.75699 0 2.15712 0 2.65055V14.5627C0.000232513 15.0559 0.40027 15.4562 0.893555 15.4562C1.38671 15.4561 1.78688 15.0558 1.78711 14.5627V9.99527L8.57227 14.5197C9.36382 15.0474 10.4246 14.4797 10.4248 13.5285V3.68473C10.4246 2.73344 9.36384 2.1658 8.57227 2.69352L1.78711 7.21695V2.65055C1.78711 2.15722 1.38685 1.75715 0.893555 1.75699Z" fill="#4C5B17"/>' +
                     '</svg>' +
                   '</span>' +
-                  '<button type="button" class="dot-music3__transportPlay dot-music3__playBtn" data-music-playing="1" aria-label="Pause">' +
+                  '<button type="button" class="dot-music3__transportPlay" data-music-playing="1" aria-label="Pause">' +
                     '<svg class="dot-music3__transportIcon dot-music3__transportIcon--play" width="14" height="18" viewBox="0 0 13.7123 16.8256" fill="none" aria-hidden="true">' +
                       '<path d="M0.712891 15.7178V1.10879C0.712891 0.071902 1.85762 -0.556488 2.73242 0.00021L13.4252 6.80471C14.2366 7.32107 14.2366 8.50556 13.4252 9.02192L2.73242 15.8264C1.85762 16.3831 0.712891 15.7547 0.712891 14.7178Z" fill="#4C5B17"/>' +
                     '</svg>' +
@@ -6842,11 +6913,12 @@ window.renderAtomicForRole = function renderAtomicForRole(comp, rect) {
             '<div class="dot-w21__statBadge dot-w21__statBadge--' + psType + '">';
           if (psType === 'run') {
             plStatHtml +=
-              '<img class="dot-w21__statBadgeIcon" src="/assets/figma/lock-screen/exercise.svg" alt="" aria-hidden="true">';
+              '<img class="dot-w21__statBadgeIcon--full" src="/assets/test3/test3-run-icon.png" alt="" aria-hidden="true">';
           } else {
             plStatHtml += '<div class="dot-w21__statBadgeValue">' + (ps.value || '') + '</div>';
+            plStatHtml += '<div class="dot-w21__statBadgeLabel">' + psLabel + '</div>';
           }
-          plStatHtml += '<div class="dot-w21__statBadgeLabel">' + psLabel + '</div></div>';
+          plStatHtml += '</div>';
         }
         var plCompactHtml =
           '<div class="dot-w21__compact" aria-hidden="false">' +
@@ -9737,7 +9809,8 @@ function _resetTest3MusicCopy(music) {
       bar.style.setProperty('--bar-track', TEST3_MUSIC_BAR_TRACK + 'px');
     }
   }
-  if (state === 'normal' || music.getAttribute('data-test3-music-settled') === '1') {
+  if (music.getAttribute('data-test3-music-settled') === '1' &&
+      (state === 'normal' || state === 'compact' || state === 'lyrics')) {
     if (typeof _freezeTest3MusicSettledProgress === 'function') {
       _freezeTest3MusicSettledProgress(music);
     }
@@ -9944,9 +10017,6 @@ function _applyTest3MusicSettledLayout(music) {
   music.setAttribute('data-test3-music-content-ready', '1');
   music.setAttribute('data-test3-music-phase', 'playing');
   music.setAttribute('data-test3-music-orb-handoff', '1');
-  if (typeof _resetTest3MusicCopy === 'function') {
-    _resetTest3MusicCopy(music);
-  }
   if (typeof _freezeTest3MusicSettledProgress === 'function') {
     _freezeTest3MusicSettledProgress(music);
   }
@@ -10305,6 +10375,10 @@ function _mountTest3MusicAfterWeatherPrep(runId) {
       test3MusicEl.removeAttribute('data-test3-music-settling');
       test3MusicEl.removeAttribute('data-test3-music-resolved');
       test3MusicEl.removeAttribute('data-test3-music-content-ready');
+      if (window.__mlpTest3MusicStaggerSettleTimer) {
+        clearTimeout(window.__mlpTest3MusicStaggerSettleTimer);
+        window.__mlpTest3MusicStaggerSettleTimer = null;
+      }
       test3MusicEl.removeAttribute('data-test3-music-stroke-ready');
       test3MusicEl.setAttribute('data-test3-music-capsule-phase', 'star');
       if (typeof _clearTest3MusicEntranceInlineStyles === 'function') {
@@ -10438,7 +10512,6 @@ function _beginTest3MusicResolve(music) {
   if (music.getAttribute('data-test3-music-resolved') === '1') return;
   music.setAttribute('data-test3-music-resolved', '1');
   music.setAttribute('data-test3-music-ivory-handoff', '1');
-  music.setAttribute('data-test3-music-content-ready', '1');
   music.style.removeProperty('height');
   if (typeof _armTest3MusicWhiteShell === 'function') {
     _armTest3MusicWhiteShell(music);
@@ -10598,7 +10671,7 @@ function _finishTest3MusicSettle(music) {
     });
   });
 }
-// Vertical expand end (~68 %) — ivory shell, then 1 s player copy fade-in via _beginTest3MusicSettle.
+// Vertical expand end (~62 %) — ivory shell, then part stagger (goal map timing).
 function _signalTest3MusicExpandReady(music) {
   music = music || document.querySelector('#test3-music');
   if (!music) return;
@@ -10611,10 +10684,30 @@ function _signalTest3MusicExpandReady(music) {
   if (!music.getAttribute('data-music-state')) {
     music.setAttribute('data-music-state', 'normal');
   }
-  if (typeof _beginTest3MusicSettle === 'function') {
-    _beginTest3MusicSettle(music);
-  } else if (typeof _applyTest3MusicSettledLayout === 'function') {
-    _applyTest3MusicSettledLayout(music);
+  music.setAttribute('data-test3-music-phase', 'playing');
+  music.setAttribute('data-test3-music-settling', '1');
+  if (typeof _resetTest3MusicCopy === 'function') {
+    _resetTest3MusicCopy(music);
+  }
+  if (window.__mlpTest3MusicStaggerSettleTimer) {
+    clearTimeout(window.__mlpTest3MusicStaggerSettleTimer);
+    window.__mlpTest3MusicStaggerSettleTimer = null;
+  }
+  var scheduleStaggerSettle = function () {
+    window.__mlpTest3MusicStaggerSettleTimer = setTimeout(function () {
+      window.__mlpTest3MusicStaggerSettleTimer = null;
+      if (!music.isConnected) return;
+      if (typeof _finishTest3MusicSettle === 'function') {
+        _finishTest3MusicSettle(music);
+      } else if (typeof _applyTest3MusicSettledLayout === 'function') {
+        _applyTest3MusicSettledLayout(music);
+      }
+    }, TEST3_MUSIC_PART_STAGGER_END_MS);
+  };
+  if (typeof _beginTest3MusicPartEntrance === 'function') {
+    _beginTest3MusicPartEntrance(music, scheduleStaggerSettle);
+  } else {
+    scheduleStaggerSettle();
   }
   void music.offsetWidth;
 }
@@ -10664,6 +10757,27 @@ function _forceTest3CssAnimationRestart(el) {
   void el.offsetWidth;
   el.style.removeProperty('animation');
   void el.offsetWidth;
+}
+// Staggered part entrance — fired at vertical expand end, not during ivory resolve.
+function _beginTest3MusicPartEntrance(music, onStaggerStart) {
+  music = music || document.querySelector('#test3-music');
+  if (!music) return;
+  music.removeAttribute('data-test3-music-content-ready');
+  music.classList.remove('test3-music-settle-active', 'test3-music-content-enter');
+  music.querySelectorAll('.test3-music-enter-part').forEach(function (el) {
+    el.style.removeProperty('opacity');
+    el.style.removeProperty('transform');
+    el.style.removeProperty('animation');
+    _forceTest3CssAnimationRestart(el);
+  });
+  void music.offsetWidth;
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      if (!music.isConnected) return;
+      music.setAttribute('data-test3-music-content-ready', '1');
+      if (typeof onStaggerStart === 'function') onStaggerStart();
+    });
+  });
 }
 function _restartTest3MusicEntranceAnimations(music) {
   if (!music) return;

@@ -2,7 +2,7 @@ import Head from "next/head";
 import Script from "next/script";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import Test3PillShinyTextBridge from "../test3/Test3PillShinyTextMount";
+import { Test3PillShinyTextBridge } from "../test3/Test3PillShinyTextMount";
 
 const PHONE_OFFSET_Y = 36;
 const PHONE_W = 388;

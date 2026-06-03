@@ -4618,10 +4618,14 @@
     background: transparent;
     cursor: pointer;
     flex: 0 0 auto;
-    opacity: 1 !important;
-    visibility: visible !important;
+    opacity: 1;
+    visibility: visible;
     pointer-events: auto;
     -webkit-tap-highlight-color: transparent;
+  }
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"] .dot-music3__transportPlay {
+    opacity: 1 !important;
+    visibility: visible !important;
   }
   #canvas[data-test-scope="test3"] #test3-music .dot-music3__transportIcon {
     grid-area: 1 / 1;
@@ -4656,23 +4660,156 @@
       transform: translateY(0);
     }
   }
-  #canvas[data-test-scope="test3"] .test3-music-part {
+  /* test3 music — 최종 flex 레이아웃 그대로, 파트별 down-opacity만 (래퍼 없음) */
+  #canvas[data-test-scope="test3"] #test3-music:not([data-test3-music-content-ready="1"]) .test3-music-enter-part,
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-content-ready="1"]) .test3-music-enter-part {
     opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    animation: none !important;
   }
-  #canvas[data-test-scope="test3"][data-test3-home="1"] #test3-music[data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .test3-music-part {
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"][data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .test3-music-enter-part {
+    opacity: 0;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    will-change: opacity, transform;
     animation: test3GoalDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) both !important;
   }
-  #canvas[data-test-scope="test3"][data-test3-home="1"] #test3-music[data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .test3-music-part[data-test3-music-part-idx="0"] { animation-delay: 0.7s !important; }
-  #canvas[data-test-scope="test3"][data-test3-home="1"] #test3-music[data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .test3-music-part[data-test3-music-part-idx="1"] { animation-delay: 1.2s !important; }
-  #canvas[data-test-scope="test3"][data-test3-home="1"] #test3-music[data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .test3-music-part[data-test3-music-part-idx="2"] { animation-delay: 1.7s !important; }
-
-  /* Ensure settled state shows them fully */
-  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"] .test3-music-part {
+  /* goal map stagger: map 0.2s → title 0.7s → status 0.8s → location 0.9s */
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"][data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .test3-music-enter-part[data-test3-music-part-idx="0"]:not([data-test3-music-part-order="1"]) {
+    animation-delay: 0.2s !important;
+  }
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"][data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .test3-music-enter-part[data-test3-music-part-order="1"] {
+    animation-delay: 0.7s !important;
+  }
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"][data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .test3-music-enter-part[data-test3-music-part-idx="1"] {
+    animation-delay: 0.8s !important;
+  }
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"][data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .test3-music-enter-part[data-test3-music-part-idx="2"] {
+    animation-delay: 0.9s !important;
+  }
+  /* test3 — times+transport 한 덩어리(플레이셋 동시 등장, 최종 슬롯 선점) */
+  #canvas[data-test-scope="test3"] #test3-music[data-music-state="normal"] .dot-music3__controls,
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-phase="playing"]:not([data-music-state="lyrics"]) .dot-music3__controls,
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"]:not([data-music-state="lyrics"]):not([data-music-state="compact"]) .dot-music3__controls {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    order: 3 !important;
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    gap: var(--test3-music-times-transport-gap, 2px) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: calc(var(--test3-pill-sub-lh, 1.35) * var(--test3-pill-sub-fs, 10px) + var(--test3-music-times-transport-gap, 2px) + var(--test3-music-transport-h, 22px)) !important;
+  }
+  #canvas[data-test-scope="test3"] #test3-music[data-music-state="normal"] .dot-music3__controls .dot-music3__times,
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-phase="playing"]:not([data-music-state="lyrics"]) .dot-music3__controls .dot-music3__times,
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"]:not([data-music-state="lyrics"]):not([data-music-state="compact"]) .dot-music3__controls .dot-music3__times {
+    order: 1 !important;
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+  }
+  #canvas[data-test-scope="test3"] #test3-music[data-music-state="normal"] .dot-music3__controls .dot-music3__transport--interactive,
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-phase="playing"]:not([data-music-state="lyrics"]):not([data-music-state="compact"]) .dot-music3__controls .dot-music3__transport--interactive,
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"]:not([data-music-state="lyrics"]):not([data-music-state="compact"]) .dot-music3__controls .dot-music3__transport--interactive,
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-music-state="normal"][data-test3-music-expand-ready="1"]:not([data-test3-music-settled="1"]) .dot-music3__controls .dot-music3__transport--interactive,
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-phase="playing"]:not([data-music-state="lyrics"]):not([data-music-state="compact"]) .dot-music3__controls .dot-music3__transport--interactive {
+    order: 2 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: var(--test3-music-transport-w, 108px) !important;
+    min-width: var(--test3-music-transport-w, 108px) !important;
+    height: var(--test3-music-transport-h, 22px) !important;
+    min-height: var(--test3-music-transport-h, 22px) !important;
+    margin: 0 auto !important;
+    align-self: center !important;
+    background: none !important;
+    background-image: none !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+    pointer-events: auto !important;
+  }
+  /* 플레이셋(prev/play/next) — controls 페이드만 따름, 자식 단독 opacity/애니 금지 */
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"][data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .dot-music3__controls.test3-music-enter-part .dot-music3__transport--interactive,
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"][data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .dot-music3__controls.test3-music-enter-part .dot-music3__transportSide,
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"][data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .dot-music3__controls.test3-music-enter-part .dot-music3__transportPlay,
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"][data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .dot-music3__controls.test3-music-enter-part .dot-music3__transportIcon {
+    opacity: inherit !important;
+    visibility: inherit !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+    filter: none !important;
+  }
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-settled="1"]) .dot-music1__icon .dot-music3__transport:not(.dot-music3__transport--interactive),
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-phase="playing"]:not([data-test3-music-settled="1"]) .dot-music1__icon .dot-music3__transport:not(.dot-music3__transport--interactive) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    background: none !important;
+    background-image: none !important;
+  }
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-expand-ready="1"][data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .dot-music1__icon .dot-music3__transport {
+    opacity: inherit !important;
+    visibility: inherit !important;
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+  /* expand-ready~settle — disc playBtn 숨김(하단 transport만), 플레이 단독 등장 방지 */
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-settled="1"]) .dot-music3__playBtn:not(.dot-music3__transportPlay),
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-settled="1"]) .dot-music1__icon .dot-music3__playBtn:not(.dot-music3__transportPlay) {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    animation: none !important;
+    pointer-events: none !important;
+  }
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"] .test3-music-enter-part {
     opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
     transform: none !important;
     animation: none !important;
   }
-
+  /* 확장 등장 — settled와 동일 flex(위→아래), space-between 금지 */
+  #canvas[data-test-scope="test3"] #test3-music[data-music-state="normal"][data-test3-music-expand-ready="1"][data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .dot-music1__icon .dot-music3,
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-music-state="normal"][data-test3-music-expand-ready="1"][data-test3-music-content-ready="1"]:not([data-test3-music-settled="1"]) .dot-music1__icon .dot-music3 {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    padding: 22px 24px var(--test3-music-pad-y-bottom, 14px) !important;
+    gap: 0 !important;
+  }
+  #canvas[data-test-scope="test3"] #test3-music[data-music-state="normal"][data-test3-music-expand-ready="1"] .dot-music3__top,
+  #canvas[data-test-scope="test3"] #test3-music[data-music-state="normal"][data-test3-music-expand-ready="1"] .dot-music3__playlistStack,
+  #canvas[data-test-scope="test3"] #test3-music[data-music-state="normal"][data-test3-music-expand-ready="1"] .dot-music3__foldTitle,
+  #canvas[data-test-scope="test3"] #test3-music[data-music-state="normal"][data-test3-music-expand-ready="1"] .dot-music3__lyrics {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+  }
+  #canvas[data-test-scope="test3"] #test3-music[data-music-state="normal"][data-test3-music-expand-ready="1"] .dot-music3__bottom,
+  #canvas[data-test-scope="test3"] #test3-music[data-music-state="normal"][data-test3-music-expand-ready="1"][data-test3-music-content-ready="1"] .dot-music3__bottom {
+    margin-top: auto !important;
+    gap: var(--test3-music-stack-gap, 10px) !important;
+  }
+  #canvas[data-test-scope="test3"] #test3-music[data-music-state="normal"][data-test3-music-expand-ready="1"]:not([data-test3-music-content-ready="1"]) .dot-music3__controls {
+    display: flex !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
   #test1-food-widget {
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -6086,7 +6223,7 @@
       transform: translateY(var(--test3-weather-drop, 90px));
     }
   }
-  /* 57%→68% — glide down in lockstep with test3MusicWrapperHeight (same 14s timeline). */
+  /* 57%→62% — glide down in lockstep with test3MusicWrapperHeight (~800ms expand, goal shell). */
   @keyframes test3WeatherShift {
     0%, 56% {
       opacity: 1;
@@ -6095,7 +6232,7 @@
     57% {
       animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
     }
-    68%, 100% {
+    62%, 100% {
       opacity: 1;
       transform: translateY(var(--test3-weather-drop-expanded, 226px));
     }
@@ -6108,7 +6245,7 @@
     57% {
       animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
     }
-    68%, 100% {
+    62%, 100% {
       opacity: 1;
       transform: translateY(var(--test3-weather-drop-expanded, 226px));
     }
@@ -6156,7 +6293,7 @@
       border-radius: 41px;
       animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
     }
-    68%, 100% {
+    62%, 100% {
       width: 340px;
       height: var(--test3-music-expand-h, 218px);
       border-radius: var(--test3-card-radius, 35px);
@@ -6176,7 +6313,7 @@
   @keyframes test3MusicWrapperHeight {
     0%, 57% { height: 82px; }
     57% { animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
-    68%, 100% { height: var(--test3-music-expand-h, 218px); }
+    62%, 100% { height: var(--test3-music-expand-h, 218px); }
   }
   @keyframes test3MusicPlayerExpand {
     0%, 57% {
@@ -6271,7 +6408,7 @@
       opacity: 1;
     }
     57% { animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
-    68%, 100% {
+    62%, 100% {
       width: 54px;
       height: 54px;
       left: 14px;
@@ -6281,7 +6418,7 @@
       opacity: 0;
     }
   }
-  /* Orb body shrinks and disappears as the background turns white (57% -> 68%). */
+  /* Orb body shrinks and disappears as the background turns white (57% -> 62%). */
   @keyframes test3MusicOrbShrinkTimeline {
     0%, 57% {
       opacity: 1;
@@ -6289,7 +6426,7 @@
       visibility: visible;
     }
     57% { animation-timing-function: cubic-bezier(0.22, 0.82, 0.24, 1); }
-    68%, 100% {
+    62%, 100% {
       opacity: 0;
       transform: scale(0);
       visibility: hidden;
@@ -6894,7 +7031,7 @@
       );
     }
     57% { animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
-    68%, 100% {
+    62%, 100% {
       -webkit-mask-image: radial-gradient(
         circle 35px at 41px 41px,
         transparent 0,
@@ -7634,13 +7771,14 @@
   #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settled="1"] .dot-music1__icon .dot-music3__headerRow .dot-music3__spotify,
   #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settled="1"] .dot-music1__icon .dot-music3__title,
   #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settled="1"] .dot-music1__icon .dot-music3__bottom,
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settled="1"] .dot-music1__icon .dot-music3__controls,
   #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settled="1"] .dot-music1__icon .dot-music3__transport {
     animation: none !important;
     opacity: 1 !important;
     visibility: visible !important;
     transform: none !important;
     filter: none !important;
-    transition: opacity 220ms cubic-bezier(0.22, 0.82, 0.24, 1), transform 220ms cubic-bezier(0.22, 0.82, 0.24, 1), filter 220ms cubic-bezier(0.22, 0.82, 0.24, 1) !important;
+    transition: opacity 220ms cubic-bezier(0.22, 0.82, 0.24, 1), filter 220ms cubic-bezier(0.22, 0.82, 0.24, 1) !important;
   }
   #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settled="1"] .dot-music1__compact--layout .dot-music1__iconBg,
   #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-phase="playing"]:not([data-test3-music-loading="1"]):not([data-test3-music-settling="1"]) .dot-music1__compact--layout .dot-music1__iconBg {
@@ -7834,8 +7972,6 @@
   #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settled="1"]:not([data-music-state="lyrics"]):not([data-music-state="compact"]) .dot-music3__transport--interactive {
     order: 4;
     display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
     justify-content: space-between !important;
     align-items: center !important;
     width: var(--test3-music-transport-w, 108px) !important;
@@ -7849,6 +7985,10 @@
     filter: none !important;
     -webkit-filter: none !important;
     pointer-events: auto !important;
+  }
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settled="1"]:not([data-music-state="lyrics"]):not([data-music-state="compact"]) .dot-music3__transport--interactive {
+    visibility: visible !important;
+    opacity: 1 !important;
   }
   #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settled="1"]:not([data-music-state="compact"]) .dot-music1__icon .dot-music3__top {
     gap: 0 !important;
@@ -11377,25 +11517,7 @@
      normal  = 기본형 340×218 (slightly shorter than goal 245)
      lyrics  = 확장형 340×367  + playlist pill
      compact = 소형   168×168 */
-  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"] .dot-music3__headerRow,
-  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"] .dot-music3__compactHeader,
-  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"] .dot-music3__title {
-    opacity: 0;
-    animation: test3GoalDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both !important;
-  }
-  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"] .dot-music3__bar {
-    opacity: 0;
-    animation: test3GoalDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both !important;
-  }
-  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"] .dot-music3__subtitle,
-  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"] .dot-music3__timeRow {
-    opacity: 0;
-    animation: test3GoalDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.1s both !important;
-  }
-  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"] .dot-music3__transport {
-    opacity: 0;
-    animation: test3GoalDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) 1.6s both !important;
-  }
+  /* Conflicting rules removed to prevent messy animation re-triggering */
   #canvas[data-test-scope="test3"] #test3-music[data-music-state="lyrics"] .dot-music1 {
     animation: none !important;
     background-color: #FFFCF4 !important;
@@ -11540,6 +11662,7 @@
   #canvas[data-test-scope="test3"] #test3-music[data-music-state] .dot-music3__playBtn:not(.dot-music3__transportPlay),
   #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-settling="1"]) .dot-music3__icon,
   #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-settling="1"]) .dot-music3__iconBg,
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-settled="1"]) .dot-music3__playBtn:not(.dot-music3__transportPlay),
   #canvas[data-test-scope="test3"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-settling="1"]) .dot-music3__playBtn:not(.dot-music3__transportPlay),
   #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"] .dot-music3__icon,
   #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"] .dot-music3__iconBg,
@@ -12322,8 +12445,6 @@
   #canvas[data-test-scope="test3"] #test3-music[data-test3-music-phase="playing"]:not([data-test3-music-loading="1"]):not([data-music-state="lyrics"]):not([data-music-state="compact"]) .dot-music3__transport--interactive {
     order: 4;
     display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
     justify-content: space-between !important;
     align-items: center !important;
     width: var(--test3-music-transport-w, 108px) !important;
@@ -12335,6 +12456,10 @@
     background: none !important;
     background-image: none !important;
     pointer-events: auto !important;
+  }
+  #canvas[data-test-scope="test3"] #test3-music[data-test3-music-settled="1"]:not([data-music-state="lyrics"]):not([data-music-state="compact"]) .dot-music3__transport--interactive {
+    visibility: visible !important;
+    opacity: 1 !important;
   }
   #canvas[data-test-scope="test3"] #test3-music[data-music-state="compact"] .dot-music3__transport--interactive {
     order: 4;
@@ -12489,13 +12614,8 @@
     letter-spacing: -0.1px;
     border-radius: 83px;
   }
-  /* expand-ready gap only — hide chrome until settling; down reveal runs under [data-test3-music-settling]. */
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-settled="1"]):not([data-test3-music-settling="1"]) .dot-music1__icon,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-settled="1"]):not([data-test3-music-settling="1"]) .dot-music1__icon .dot-music3__title,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-settled="1"]):not([data-test3-music-settling="1"]) .dot-music1__icon .dot-music3__bottom,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-settled="1"]):not([data-test3-music-settling="1"]) .dot-music3__compactHeader,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-settled="1"]):not([data-test3-music-settling="1"]) .dot-music3__headerRow,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-settled="1"]):not([data-test3-music-settling="1"]) .dot-music3__transport {
+  /* expand-ready — hide enter parts until content-ready stagger starts */
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-expand-ready="1"]:not([data-test3-music-content-ready="1"]):not([data-test3-music-settled="1"]) .test3-music-enter-part {
     opacity: 0 !important;
     visibility: hidden !important;
     animation: none !important;
@@ -12750,8 +12870,9 @@
     animation: none !important;
     z-index: 4 !important;
   }
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"] .dot-music1__icon .dot-music3 {
-    padding: 18px 22px 14px !important;
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"] .dot-music1__icon .dot-music3,
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"][data-test3-music-expand-ready="1"] .dot-music1__icon .dot-music3 {
+    padding: 22px 24px var(--test3-music-pad-y-bottom, 14px) !important;
     gap: 0 !important;
     background: transparent !important;
     opacity: 1 !important;
@@ -12782,28 +12903,6 @@
     opacity: 0;
     animation: test3MusicSettleOverlayReveal 860ms cubic-bezier(0.22, 0.82, 0.24, 1) 100ms forwards !important;
   }
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"].test3-music-settle-active .dot-music3__compactHeader,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"].test3-music-settle-active .dot-music3__headerRow,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"].test3-music-settle-active .dot-music3__spotify,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"].test3-music-settle-active .dot-music3__mediaPill {
-    visibility: visible !important;
-    opacity: 0;
-    transform: translateY(4px);
-    animation: test3MusicSettleTextReveal var(--test3-music-settle-text-ms, 560ms) cubic-bezier(0.22, 0.82, 0.24, 1) 0ms forwards !important;
-  }
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"].test3-music-settle-active .dot-music3__title {
-    visibility: visible !important;
-    opacity: 0;
-    transform: translateY(4px);
-    animation: test3MusicSettleTextReveal var(--test3-music-settle-text-ms, 560ms) cubic-bezier(0.22, 0.82, 0.24, 1) 40ms forwards !important;
-  }
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"].test3-music-settle-active .dot-music3__bottom,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"].test3-music-settle-active .dot-music3__transport {
-    visibility: visible !important;
-    opacity: 0;
-    transform: translateY(4px);
-    animation: test3MusicSettleTextReveal var(--test3-music-settle-text-ms, 560ms) cubic-bezier(0.22, 0.82, 0.24, 1) 72ms forwards !important;
-  }
   #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"].test3-music-settle-active .dot-music1__icon {
     pointer-events: auto !important;
     z-index: 5 !important;
@@ -12811,12 +12910,7 @@
   #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"].test3-music-settle-active .dot-music1__compact--layout .dot-music1__iconBg {
     pointer-events: none !important;
   }
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not(.test3-music-settle-active) .dot-music3__compactHeader,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not(.test3-music-settle-active) .dot-music3__headerRow,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not(.test3-music-settle-active) .dot-music3__spotify,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not(.test3-music-settle-active) .dot-music3__title,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not(.test3-music-settle-active) .dot-music3__bottom,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not(.test3-music-settle-active) .dot-music3__transport {
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not([data-test3-music-content-ready="1"]) .test3-music-enter-part {
     opacity: 0 !important;
     visibility: hidden !important;
   }
@@ -12870,13 +12964,13 @@
     opacity: 0 !important;
     visibility: hidden !important;
   }
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"] .dot-music3__compactHeader,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"] .dot-music3__headerRow {
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not([data-test3-music-content-ready="1"]) .dot-music3__compactHeader,
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not([data-test3-music-content-ready="1"]) .dot-music3__headerRow {
     display: flex !important;
     visibility: hidden !important;
     opacity: 0 !important;
   }
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not([data-music-state="compact"]):not([data-music-state="lyrics"]) .dot-music3__headerRow .dot-music3__spotify {
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not([data-test3-music-content-ready="1"]):not([data-music-state="compact"]):not([data-music-state="lyrics"]) .dot-music3__headerRow .dot-music3__spotify {
     display: block !important;
     position: static !important;
     width: 14px !important;
@@ -12895,8 +12989,8 @@
     visibility: hidden !important;
     opacity: 0 !important;
   }
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"] .dot-music3__title,
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"] .dot-music3__bottom {
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not([data-test3-music-content-ready="1"]) .dot-music3__title,
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not([data-test3-music-content-ready="1"]) .dot-music3__bottom {
     visibility: hidden !important;
     opacity: 0 !important;
     transform: translateY(5px);
@@ -12926,7 +13020,7 @@
   #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not([data-music-state="lyrics"]) .dot-music3__bar .dot-music__barTrack::after {
     background: #4C5B17 !important;
   }
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not([data-music-state="lyrics"]) .dot-music3__transport {
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settling="1"]:not([data-test3-music-content-ready="1"]):not([data-music-state="lyrics"]) .dot-music3__transport:not(.dot-music3__transport--interactive) {
     display: block !important;
     visibility: hidden !important;
     opacity: 0 !important;
@@ -13551,7 +13645,8 @@
     cursor: pointer;
     touch-action: none;
   }
-  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music .dot-music1__icon .dot-music3__transport {
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-settled="1"] .dot-music1__icon .dot-music3__transport,
+  #canvas[data-test-scope="test3"][data-test3-music-shift="1"] #test3-music[data-test3-music-phase="playing"]:not([data-test3-music-loading="1"]):not([data-test3-music-settling="1"]) .dot-music1__icon .dot-music3__transport {
     animation: none !important;
     opacity: 1 !important;
     visibility: visible !important;
@@ -16022,6 +16117,17 @@
     inset: 0;
     border-radius: 50%;
     background: #171719;
+  }
+  #canvas[data-test-scope="test3"] #test3-weather .dot-w21__statBadge--run::before {
+    display: none;
+  }
+  #canvas[data-test-scope="test3"] #test3-weather .dot-w21__statBadgeIcon--full {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
   }
   #canvas[data-test-scope="test3"] #test3-weather .dot-w21__statBadgeIcon {
     position: relative;
