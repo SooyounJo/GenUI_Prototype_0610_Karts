@@ -701,40 +701,6 @@ export default function MlpTestPage({
             background-repeat: no-repeat !important;
             transition: background-image 0.8s ease-in-out !important;
           }
-          .page-nav {
-            position: absolute !important;
-            top: 24px !important;
-            left: 0 !important;
-            right: 0 !important;
-            padding: 0 40px !important;
-            display: flex !important;
-            justify-content: flex-end !important;
-            align-items: center !important;
-            z-index: 2000 !important;
-            pointer-events: none !important;
-          }
-          .nav-btn {
-            /* Container-less style per user direction: just text, no
-               background pill, no border. Hover bumps the opacity for
-               a subtle feedback signal. */
-            pointer-events: auto !important;
-            background: transparent !important;
-            border: none !important;
-            color: rgba(255, 255, 255, 0.65) !important;
-            padding: 4px 0 !important;
-            font-size: 13px !important;
-            font-weight: 500 !important;
-            letter-spacing: 0.2px !important;
-            cursor: pointer !important;
-            transition: color 0.2s ease !important;
-            backdrop-filter: none !important;
-            text-decoration: none !important;
-            display: inline-flex !important;
-            align-items: center !important;
-          }
-          .nav-btn:hover {
-            color: #ffffff !important;
-          }
           /* Hide Next.js dev mode indicator (the floating "N" badge
              that appears at the bottom-left in development) — per
              user direction. Multiple selectors cover known IDs the
@@ -1633,10 +1599,6 @@ export default function MlpTestPage({
       </Head>
 
       <main className="app-shell mlp-test-page" data-mlp-test={testId}>
-        <nav className="page-nav">
-          <Link href="/theme" className="nav-btn">Theme</Link>
-        </nav>
-
         <div className="mlp-workspace">
           <aside className={`mlp-left${shouldOffsetStack ? " is-hovering" : ""}${hasInteracted ? " has-interacted" : ""}`}>
             {TESTS.map((test, idx) => {
