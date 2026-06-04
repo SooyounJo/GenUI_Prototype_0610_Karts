@@ -610,35 +610,11 @@ var TEST3_MUSIC_GLOW_FADE_MS = 1000;
 var TEST3_MUSIC_FILL_FADE_MS = 1400;
 var TEST3_MUSIC_ENTRANCE_END_MS = TEST3_MUSIC_MOTION_MS;
 
-/** Figma 5436:15945 — test1 status bar (time + live pill + system icons). */
-function renderTest1HealthStatusBar(props) {
-  var p = props || {};
-  var asset = 'assets/test1/status-bar/';
-  var time = p.time || '9:41';
-  var liveTimer = p.liveTimer || '1:02:59';
+/** test1 status bar image layer. */
+function renderTest1HealthStatusBar() {
   var fill = 'width:100%;height:100%;box-sizing:border-box;';
   return '<div class="test1-status-bar" style="' + fill + '">' +
-           '<div class="test1-status-bar__left">' +
-             '<span class="test1-status-bar__time">' + time + '</span>' +
-             '<div class="test1-status-bar__live" aria-hidden="true">' +
-               '<span class="test1-status-bar__live-icon">' +
-                 '<img src="' + asset + 'phone-live.svg" alt="" />' +
-               '</span>' +
-               '<span class="test1-status-bar__live-timer">' + liveTimer + '</span>' +
-             '</div>' +
-           '</div>' +
-           '<div class="test1-status-bar__right">' +
-             '<div class="test1-status-bar__icon test1-status-bar__icon--wifi" aria-hidden="true">' +
-               '<img src="' + asset + 'wifi.svg" alt="" />' +
-             '</div>' +
-             '<div class="test1-status-bar__icon test1-status-bar__icon--cell" aria-hidden="true">' +
-               '<img src="' + asset + 'cellular.svg" alt="" />' +
-             '</div>' +
-             '<div class="test1-status-bar__battery" aria-hidden="true">' +
-               '<img class="test1-status-bar__battery-left" src="' + asset + 'battery-left.svg" alt="" />' +
-               '<img class="test1-status-bar__battery-right" src="' + asset + 'battery-right.svg" alt="" />' +
-             '</div>' +
-           '</div>' +
+           '<img class="test1-status-bar__image" src="/status.png" alt="" draggable="false" />' +
          '</div>';
 }
 
