@@ -466,13 +466,13 @@ export default function PrototypePage() {
         <div className="mlp-workspace">
           <aside className="mlp-left">
             <Link href="/test1" className="persona-circle">
-              <img src="/assets/persona01.png" alt="Persona 1" className="persona-img" />
+              <video className="persona-img" src="/mp4/t1.mp4" muted playsInline preload="metadata" aria-label="Persona 1" />
             </Link>
             <Link href="/test2" className="persona-circle" style={{ cursor: 'pointer', border: scenario === 'lockscreen-persona2' ? '3px solid #fff' : 'none' }}>
-              <img src="/assets/persona-2.png?v=2" alt="Persona 2" className="persona-img" />
+              <video className="persona-img" src="/mp4/t2.mp4" muted playsInline preload="metadata" aria-label="Persona 2" />
             </Link>
             <Link href="/test3" className="persona-circle" style={{ cursor: 'pointer' }}>
-              <img src="/assets/persona-3.png?v=2" alt="Persona 3" className="persona-img" />
+              <video className="persona-img" src="/mp4/t3.mp4" muted playsInline preload="metadata" aria-label="Persona 3" />
             </Link>
           </aside>
 

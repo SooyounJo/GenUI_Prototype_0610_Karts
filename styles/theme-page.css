@@ -18520,14 +18520,12 @@
   #canvas[data-test-scope="test1"][data-test1-home-run] .canvas-item[data-role="test1-now-bar"],
   #canvas[data-test-scope="test1"][data-test1-home-run] .canvas-item[data-role="test1-now-bar-b"],
   #canvas[data-test-scope="test1"][data-test1-home-run] .canvas-item[data-role="test1-transit-card"],
+  #canvas[data-test-scope="test1"][data-test1-home-run] .canvas-item[data-role="test1-assist-pill"],
   #canvas[data-test-scope="test1"][data-test1-home-run] .canvas-item[data-role="test1-gradient-sweep"],
   #canvas[data-test-scope="test1"][data-test1-home-run] #test1-now-bar,
   #canvas[data-test-scope="test1"][data-test1-home-run] #test1-now-bar-b,
   #canvas[data-test-scope="test1"][data-test1-home-run] #test1-transit-card,
-  #canvas[data-test-scope="test1"][data-test1-home-prep] .canvas-item[data-role="lockIndicator"],
-  #canvas[data-test-scope="test1"][data-test1-home-prep] #test1-lock-indicator,
-  #canvas[data-test-scope="test1"][data-test1-home-prep] .canvas-item[data-role="test1-lock-stack"],
-  #canvas[data-test-scope="test1"][data-test1-home-prep] #test1-lock-stack {
+  #canvas[data-test-scope="test1"][data-test1-home-run] #test1-assist-pill {
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
@@ -20684,6 +20682,15 @@
   #canvas[data-test-scope="test1"][data-test1-home-exit] #test1-lock-stack,
   #canvas[data-test-scope="test1"][data-test1-home-exit] .canvas-item[data-role="lockIndicator"],
   #canvas[data-test-scope="test1"][data-test1-home-exit] #test1-lock-indicator,
+  #canvas[data-test-scope="test1"][data-test1-home-exit] .canvas-item[data-role="test1-now-bar"],
+  #canvas[data-test-scope="test1"][data-test1-home-exit] #test1-now-bar,
+  #canvas[data-test-scope="test1"][data-test1-home-exit] .canvas-item[data-role="test1-now-bar-b"],
+  #canvas[data-test-scope="test1"][data-test1-home-exit] #test1-now-bar-b,
+  #canvas[data-test-scope="test1"][data-test1-home-exit] .canvas-item[data-role="test1-transit-card"],
+  #canvas[data-test-scope="test1"][data-test1-home-exit] #test1-transit-card,
+  #canvas[data-test-scope="test1"][data-test1-home-exit] .canvas-item[data-role="test1-assist-pill"],
+  #canvas[data-test-scope="test1"][data-test1-home-exit] #test1-assist-pill,
+  #canvas[data-test-scope="test1"][data-test1-home-exit] .canvas-item[data-role="test1-gradient-sweep"],
   #canvas[data-test-scope="test1"][data-test1-home-exit] .canvas-item[data-role="test1-lock-shortcut-l"],
   #canvas[data-test-scope="test1"][data-test1-home-exit] .canvas-item[data-role="test1-lock-shortcut-r"],
   #canvas[data-test-scope="test1"][data-test1-home-exit] #test1-l-shortcut,
@@ -20745,11 +20752,6 @@
     }
   }
 
-  #canvas[data-test-scope="test1"][data-test1-home-prep] .canvas-item[data-role="test1-now-bar"],
-  #canvas[data-test-scope="test1"][data-test1-home-prep] .canvas-item[data-role="test1-now-bar-b"],
-  #canvas[data-test-scope="test1"][data-test1-home-prep] .canvas-item[data-role="test1-transit-card"],
-  #canvas[data-test-scope="test1"][data-test1-home-prep] .canvas-item[data-role="test1-assist-pill"],
-  #canvas[data-test-scope="test1"][data-test1-home-prep] .canvas-item[data-role="test1-gradient-sweep"],
   #canvas[data-test-scope="test1"][data-test1-reveal-all] .canvas-item[data-role="test1-now-bar"],
   #canvas[data-test-scope="test1"][data-test1-reveal-all] .canvas-item[data-role="test1-now-bar-b"],
   #canvas[data-test-scope="test1"][data-test1-reveal-all] .canvas-item[data-role="test1-assist-pill"],
@@ -21643,9 +21645,22 @@
     width: 100%;
     height: 100%;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    padding-top: 1px;
     gap: 7px;
+    box-sizing: border-box;
+  }
+  /* Home — keep page dots visibly separated from the food card */
+  #canvas[data-test-scope="test1"][data-test1-home-run] .canvas-item[data-role="test1-page-dots"],
+  #canvas[data-test-scope="test1"][data-test1-home-animate]:not([data-test1-reveal-all]) .canvas-item[data-role="test1-page-dots"] {
+    top: 730px !important;
+    height: 24px !important;
+  }
+  #canvas[data-test-scope="test1"][data-test1-home-run] .canvas-item[data-role="test1-home-food"],
+  #canvas[data-test-scope="test1"][data-test1-home-animate]:not([data-test1-reveal-all]) .canvas-item[data-role="test1-home-food"] {
+    height: 346px !important;
+    max-height: 346px !important;
   }
   #canvas[data-test-scope="test1"] .test1-page-dots__dot {
     width: 6px;
