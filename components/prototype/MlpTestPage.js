@@ -106,7 +106,7 @@ const TESTS = [
   {
     id: "test2", href: "/test2", label: "Persona 2", img: "/assets/persona-2.png?v=3",
     video: "/mp4/t2.mp4",
-    name: "박서현",
+    name: "서현",
     age: "28, Product Designer",
     bioLines: [
       "6일간 휴가 후 복귀. 분석적이고 계획적인 성격,",
@@ -386,9 +386,14 @@ export default function MlpTestPage({
   // (so previewing a different persona shifts the layout), otherwise
   // falls back to the active badge.
   const activeIdx   = TESTS.findIndex(t => t.id === testId && !t.disabled);
-  const focusIdx    = hoveredIdx >= 0 ? hoveredIdx : activeIdx;
-  // Badge stack spacing stays on flex gap: 24px — never shift on hover.
-  const shouldOffsetStack = false;
+  // Stack push uses hoveredId directly — cardRowId updates on the next
+  // frame for the profile card, but neighbours must shift immediately
+  // when the badge scales so they never overlap during the spring.
+  const hoverFocusIdx = hoveredId ? TESTS.findIndex(t => t.id === hoveredId) : -1;
+  const focusIdx    = hoverFocusIdx >= 0 ? hoverFocusIdx : activeIdx;
+  // When a badge expands on hover, neighbouring slots nudge so the 1.8×
+  // scale never collides (see .persona-slot push CSS).
+  const shouldOffsetStack = hoveredId != null;
   const workspaceBg = WORKSPACE_BGS[testId] || WORKSPACE_BGS.test1;
 
   const renderPersonaAvatar = (test) => {
@@ -752,6 +757,9 @@ export default function MlpTestPage({
           .persona-slot {
             --persona-badge-size: 76px;
             --persona-hover-scale: 1.8;
+            /* Half of the visual growth beyond the base badge — used to
+               nudge neighbouring slots when a badge expands. */
+            --persona-push-y: calc(var(--persona-badge-size) * (var(--persona-hover-scale) - 1) / 2);
             width: var(--persona-badge-size) !important;
             height: var(--persona-badge-size) !important;
             flex: 0 0 auto !important;
@@ -759,9 +767,14 @@ export default function MlpTestPage({
             align-items: center !important;
             justify-content: center !important;
             position: relative !important;
+            transition:
+              margin-bottom 0.52s cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 0.52s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
           }
-          .persona-slot:has(.persona-circle:not(.is-disabled):hover),
-          .persona-slot:has(.persona-circle:not(.is-disabled).is-hovered) {
+          /* Expanded slot grows in the flex column so badges below are
+             pushed down with the same spring curve as the scale. */
+          .mlp-left.is-hovering .persona-slot.is-stack-focus {
+            margin-bottom: var(--persona-push-y) !important;
             z-index: 4 !important;
           }
           .persona-circle {
@@ -1106,12 +1119,16 @@ export default function MlpTestPage({
             87.5%  { opacity: 1; padding: 5px; }
             100%   { opacity: 0; padding: 0; }
           }
-          /* Other badges (not the hovered one) stay in place. */
+          /* Non-hovered badges stay at 1× while the focused one expands. */
           .mlp-left.is-hovering .persona-circle[data-hover-offset="-1"] {
             transform: none !important;
           }
           .mlp-left.is-hovering .persona-circle[data-hover-offset="1"] {
             transform: none !important;
+          }
+          /* Slots above the expanded badge slide up so they don't collide. */
+          .mlp-left.is-hovering .persona-slot[data-stack-offset="-1"] {
+            transform: translateY(calc(-1 * var(--persona-push-y))) !important;
           }
           /* Persona profile card — slides in to the right of the
              hovered badge with a tinted backdrop, bio, and interest
@@ -1605,6 +1622,8 @@ export default function MlpTestPage({
               const offset = focusIdx < 0 || idx === focusIdx
                 ? 0
                 : (idx < focusIdx ? -1 : 1);
+              const stackOffset = offset;
+              const isStackFocus = hoveredId === test.id;
               const hoveredClass = test.id === hoveredId ? " is-hovered" : "";
               const className = `persona-circle${test.id === testId ? " is-active" : ""}${test.disabled ? " is-disabled" : ""}${hoveredClass}`;
               const onMouseEnter = test.disabled ? undefined : () => {
@@ -1623,7 +1642,7 @@ export default function MlpTestPage({
               };
               if (test.disabled) {
                 return (
-                  <div key={test.id} className="persona-slot">
+                  <div key={test.id} className={`persona-slot${isStackFocus ? " is-stack-focus" : ""}`} data-stack-offset={stackOffset}>
                     <span
                       className={className}
                       aria-disabled="true"
@@ -1637,7 +1656,7 @@ export default function MlpTestPage({
                 );
               }
               return (
-                <div key={test.id} className="persona-slot">
+                <div key={test.id} className={`persona-slot${isStackFocus ? " is-stack-focus" : ""}`} data-stack-offset={stackOffset}>
                   <Link
                     href={test.href}
                     className={className}
