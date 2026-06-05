@@ -21,6 +21,15 @@ const WORKSPACE_BGS = {
   test2: "/assets/test2/test2-workspace-bg.png",
   test3: "/assets/test3/test3-workspace-bg.png",
 };
+/** Full-viewport transition video per test — fades in first, then out to static bg. */
+const WORKSPACE_TRANSITION_VIDEOS = {
+  test1: "/mp4/b1.mp4",
+  test2: "/mp4/b2.mp4",
+  test3: "/mp4/b3.mp4",
+};
+const BG_VIDEO_FADE_IN_MS = 480;
+const BG_VIDEO_FADE_OUT_MS = 820;
+const MOBILE_ENTRY_MS = 820;
 
 /** White conic ring — shared by test1/test2/test3 persona badges. */
 const PERSONA_RING_WHITE_GRADIENT =
@@ -93,7 +102,7 @@ function syncAllPersonaVideoFrames(activeId) {
 
 const TESTS = [
   {
-    id: "test1", href: "/test1", label: "Persona 1", img: "/assets/persona01.png",
+    id: "test1", href: "/test1", label: "Persona 1",
     video: "/mp4/t1.mp4",
     name: "지수",
     age: "45, Teacher",
@@ -104,7 +113,7 @@ const TESTS = [
     interests: ["Evening routine", "Home cooking", "SmartThings user"],
   },
   {
-    id: "test2", href: "/test2", label: "Persona 2", img: "/assets/persona-2.png?v=3",
+    id: "test2", href: "/test2", label: "Persona 2",
     video: "/mp4/t2.mp4",
     name: "서현",
     age: "28, Product Designer",
@@ -115,7 +124,7 @@ const TESTS = [
     interests: ["Design reviews", "Dev collaboration", "Figma expert"],
   },
   {
-    id: "test3", href: "/test3", label: "Persona 3", img: "/assets/persona-3.png?v=3",
+    id: "test3", href: "/test3", label: "Persona 3",
     video: "/mp4/t3.mp4",
     name: "유진",
     age: "31, Backend Developer",
@@ -304,15 +313,132 @@ export default function MlpTestPage({
   const cardRowIdRef = useRef(null);
 
   // ─── Entry Sequence ───
-  // When switching tests, the mobile frame slides up from below with opacity.
-  // Delay entry by 2 seconds per user request.
+  // Persona switch: transition video fades in first, then fades out to the
+  // static workspace bg while the phone rises into place.
   const [isEntering, setIsEntering] = useState(false);
+  const [bgVideoPhase, setBgVideoPhase] = useState("fade-in");
+  const [bgVideoActive, setBgVideoActive] = useState(false);
+  const bgVideoRef = useRef(null);
+  const bgTimersRef = useRef([]);
+  const bgVideoSyncCleanupRef = useRef(null);
 
-  useEffect(() => {
+  useEffect(function () {
+    bgTimersRef.current.forEach(clearTimeout);
+    bgTimersRef.current = [];
+    if (bgVideoSyncCleanupRef.current) {
+      bgVideoSyncCleanupRef.current();
+      bgVideoSyncCleanupRef.current = null;
+    }
     setIsEntering(false);
-    const timer = setTimeout(() => setIsEntering(true), 1000);
-    return () => clearTimeout(timer);
+    setBgVideoActive(false);
+    setBgVideoPhase("fade-in");
+
+    return function () {
+      bgTimersRef.current.forEach(clearTimeout);
+      bgTimersRef.current = [];
+      if (bgVideoSyncCleanupRef.current) {
+        bgVideoSyncCleanupRef.current();
+        bgVideoSyncCleanupRef.current = null;
+      }
+    };
   }, [testId]);
+
+  useEffect(function () {
+    if (bgVideoPhase !== "fade-in") return;
+    var video = bgVideoRef.current;
+    if (!video) return;
+
+    var fadeOutStarted = false;
+    var localCleanup = null;
+
+    function cleanupListeners() {
+      if (localCleanup) {
+        localCleanup();
+        localCleanup = null;
+      }
+      if (bgVideoSyncCleanupRef.current === cleanupListeners) {
+        bgVideoSyncCleanupRef.current = null;
+      }
+    }
+
+    function beginFadeOut() {
+      if (fadeOutStarted) return;
+      fadeOutStarted = true;
+      cleanupListeners();
+      setBgVideoPhase("fade-out");
+      setIsEntering(true);
+      bgTimersRef.current.push(
+        setTimeout(function () {
+          setBgVideoPhase("hidden");
+          setBgVideoActive(false);
+          try { video.pause(); } catch (_) {}
+        }, BG_VIDEO_FADE_OUT_MS)
+      );
+    }
+
+    function armEndSync() {
+      var fadeOutLeadSec = BG_VIDEO_FADE_OUT_MS / 1000;
+      function onTimeUpdate() {
+        if (!video.duration || !isFinite(video.duration)) return;
+        var triggerAt = Math.max(0, video.duration - fadeOutLeadSec);
+        if (video.currentTime >= triggerAt) {
+          beginFadeOut();
+        }
+      }
+      function onEnded() {
+        if (!fadeOutStarted) beginFadeOut();
+      }
+      video.addEventListener("timeupdate", onTimeUpdate);
+      video.addEventListener("ended", onEnded);
+      localCleanup = function () {
+        video.removeEventListener("timeupdate", onTimeUpdate);
+        video.removeEventListener("ended", onEnded);
+      };
+      bgVideoSyncCleanupRef.current = cleanupListeners;
+      onTimeUpdate();
+    }
+
+    function startPlayback() {
+      try { video.currentTime = 0; } catch (_) {}
+      var playPromise = video.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(function () {});
+      }
+      armEndSync();
+    }
+
+    if (video.readyState >= 1 && video.duration && isFinite(video.duration)) {
+      startPlayback();
+    } else {
+      function onMeta() {
+        video.removeEventListener("loadedmetadata", onMeta);
+        startPlayback();
+      }
+      video.addEventListener("loadedmetadata", onMeta);
+      video.load();
+      localCleanup = function () {
+        video.removeEventListener("loadedmetadata", onMeta);
+      };
+      bgVideoSyncCleanupRef.current = cleanupListeners;
+    }
+
+    return cleanupListeners;
+  }, [bgVideoPhase, testId]);
+
+  useEffect(function () {
+    if (bgVideoPhase !== "fade-in") return;
+    var rafA;
+    var rafB;
+    rafA = requestAnimationFrame(function () {
+      rafB = requestAnimationFrame(function () {
+        setBgVideoActive(true);
+      });
+    });
+    return function () {
+      cancelAnimationFrame(rafA);
+      if (rafB) cancelAnimationFrame(rafB);
+    };
+  }, [bgVideoPhase, testId]);
 
   useEffect(() => { cardRowIdRef.current = cardRowId; }, [cardRowId]);
   // Ref to the card DOM node — we toggle .is-snapping imperatively to
@@ -407,27 +533,16 @@ export default function MlpTestPage({
         aria-hidden="true"
       />
     ) : null;
-    /* Hidden — palette ring extraction only; visible media is .persona-video */
-    var paletteImg = test.img ? (
-      <img
-        src={test.img}
-        alt=""
-        className={"persona-img persona-img--palette" + (test.id === "test1" ? " persona-img--test1" : "")}
-        aria-hidden="true"
-      />
-    ) : null;
     if (test.id === "test1") {
       return (
         <span className="persona-avatar-fill" aria-hidden="true">
           <span className="persona-avatar-fill__ellipse" />
-          {paletteImg}
           {videoEl}
         </span>
       );
     }
     return (
       <span className="persona-avatar-media" aria-hidden="true">
-        {paletteImg}
         {videoEl}
       </span>
     );
@@ -459,7 +574,7 @@ export default function MlpTestPage({
     };
   }, [mounted, testId]);
 
-  // Per-badge palette extracted from each avatar image. Colors stay
+  // Per-badge palette extracted from each avatar video frame. Colors stay
   // close to the portrait (background, skin, clothing) — no forced
   // rainbow/neon hue rotation. The conic-gradient ring uses c1→c2→
   // c3→c4 sorted by hue so the spin reads as the avatar's own palette.
@@ -509,13 +624,13 @@ export default function MlpTestPage({
     function rgbToCss(rgb) {
       return "rgb(" + rgb[0] + ", " + rgb[1] + ", " + rgb[2] + ")";
     }
-    function extract(img) {
+    function extract(source) {
       try {
         var size = 32;
         var c = document.createElement("canvas");
         c.width = size; c.height = size;
         var ctx = c.getContext("2d");
-        ctx.drawImage(img, 0, 0, size, size);
+        ctx.drawImage(source, 0, 0, size, size);
         var pixels = ctx.getImageData(0, 0, size, size).data;
         var buckets = new Map();
         for (var i = 0; i < pixels.length; i += 4) {
@@ -552,12 +667,12 @@ export default function MlpTestPage({
     }
     function apply(badge) {
       var key = badge.getAttribute("data-avatar-key");
-      // test1 ring palette is mirrored from test2 — skip image extraction.
+      // test1 ring palette is mirrored from test2 — skip video extraction.
       if (key === "test1") return;
-      var img = badge.querySelector("img.persona-img");
-      if (!img) return;
+      var video = badge.querySelector("video.persona-video");
+      if (!video) return;
       function go() {
-        var colors = extract(img);
+        var colors = extract(video);
         if (!colors || colors.length < 4) return;
         badge.style.setProperty("--persona-c1", colors[0]);
         badge.style.setProperty("--persona-c2", colors[1]);
@@ -565,8 +680,8 @@ export default function MlpTestPage({
         badge.style.setProperty("--persona-c4", colors[3]);
         if (key === "test2") syncTest1RingFromTest2();
       }
-      if (img.complete && img.naturalWidth > 0) go();
-      else img.addEventListener("load", go, { once: true });
+      if (video.readyState >= 2 && video.videoWidth > 0) go();
+      else video.addEventListener("loadeddata", go, { once: true });
     }
     var raf = requestAnimationFrame(function () {
       var badges = document.querySelectorAll(".persona-circle:not(.is-disabled)");
@@ -704,7 +819,29 @@ export default function MlpTestPage({
             background-size: cover !important;
             background-position: center center !important;
             background-repeat: no-repeat !important;
-            transition: background-image 0.8s ease-in-out !important;
+          }
+          /* Workspace bg transition video — full viewport, under UI chrome. */
+          .mlp-workspace-bg-video {
+            position: fixed !important;
+            inset: 0 !important;
+            z-index: 0 !important;
+            pointer-events: none !important;
+            overflow: hidden !important;
+          }
+          .mlp-workspace-bg-video video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            object-position: center center !important;
+            opacity: 0 !important;
+          }
+          .mlp-workspace-bg-video video.is-fade-in {
+            opacity: 1 !important;
+            transition: opacity ${BG_VIDEO_FADE_IN_MS}ms cubic-bezier(0.2, 0, 0, 1) !important;
+          }
+          .mlp-workspace-bg-video video.is-fade-out {
+            opacity: 0 !important;
+            transition: opacity ${BG_VIDEO_FADE_OUT_MS}ms cubic-bezier(0.2, 0, 0, 1) !important;
           }
           /* Hide Next.js dev mode indicator (the floating "N" badge
              that appears at the bottom-left in development) — per
@@ -736,7 +873,7 @@ export default function MlpTestPage({
             background-position: center center !important;
             background-repeat: no-repeat !important;
             position: relative !important;
-            transition: background-image 0.8s ease-in-out !important;
+            z-index: 1 !important;
           }
           .mlp-left {
             width: 120px !important;
@@ -918,14 +1055,6 @@ export default function MlpTestPage({
             overflow: hidden;
             z-index: 0;
             pointer-events: none;
-          }
-          .persona-circle .persona-img,
-          .persona-circle .persona-img--palette {
-            display: none !important;
-            width: 0 !important;
-            height: 0 !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
           }
           .persona-circle .persona-video {
             position: absolute;
@@ -1534,12 +1663,6 @@ export default function MlpTestPage({
               opacity: 0;
             }
           }
-          .persona-img {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-            border-radius: 50% !important;
-          }
           .mlp-right {
             flex-grow: 1 !important;
             height: 100% !important;
@@ -1569,7 +1692,7 @@ export default function MlpTestPage({
           .mlp-test-page .canvas-wrap.is-entering {
             opacity: 1;
             pointer-events: auto;
-            animation: mobileEntryUp 0.8s cubic-bezier(0.2, 0, 0, 1) forwards;
+            animation: mobileEntryUp ${MOBILE_ENTRY_MS}ms cubic-bezier(0.2, 0, 0, 1) forwards;
           }
           @keyframes mobileEntryUp {
             from {
@@ -1617,6 +1740,22 @@ export default function MlpTestPage({
 
       <main className="app-shell mlp-test-page" data-mlp-test={testId}>
         <div className="mlp-workspace">
+          {bgVideoPhase !== "hidden" && WORKSPACE_TRANSITION_VIDEOS[testId] ? (
+            <div className="mlp-workspace-bg-video" aria-hidden="true">
+              <video
+                ref={bgVideoRef}
+                className={
+                  bgVideoPhase === "fade-out"
+                    ? "is-fade-out"
+                    : (bgVideoActive ? "is-fade-in" : "")
+                }
+                src={WORKSPACE_TRANSITION_VIDEOS[testId]}
+                muted
+                playsInline
+                preload="auto"
+              />
+            </div>
+          ) : null}
           <aside className={`mlp-left${shouldOffsetStack ? " is-hovering" : ""}${hasInteracted ? " has-interacted" : ""}`}>
             {TESTS.map((test, idx) => {
               const offset = focusIdx < 0 || idx === focusIdx
