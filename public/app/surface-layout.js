@@ -358,11 +358,11 @@ function _syncTest3MusicDiscLoaderAfterRender() {
   }
 }
 
-/** test3 disc star phase — reuses the tuned test1 white P2 Galaxy star motion. */
+/** test3 disc star phase — reuses test1 Galaxy AI logo motion (white-only). */
 var TEST3_DISC_SPARKLE_PX = 88;
 
 function renderTest3MusicDiscSparkleHtml() {
-  return '<canvas class="test3-music-disc__sparkleCanvas p2-galaxy-star__canvas" width="' + TEST3_DISC_SPARKLE_PX +
+  return '<canvas class="test3-music-disc__sparkleCanvas" width="' + TEST3_DISC_SPARKLE_PX +
     '" height="' + TEST3_DISC_SPARKLE_PX + '" aria-hidden="true"></canvas>';
 }
 
@@ -370,9 +370,6 @@ function _test3SparkleStopCanvas(canvas) {
   if (!canvas) return;
   if (window.__test1GalaxyAiLogo && typeof window.__test1GalaxyAiLogo.unmountCanvas === 'function') {
     window.__test1GalaxyAiLogo.unmountCanvas(canvas);
-  }
-  if (window.P2GalaxyStar && typeof window.P2GalaxyStar.unmount === 'function') {
-    window.P2GalaxyStar.unmount({ removeCanvas: false });
   }
 }
 function _stopTest3MusicDiscSparkle(music) {
@@ -389,17 +386,10 @@ function _stopTest3MusicDiscSparkle(music) {
 function _startTest3MusicDiscSparkleCanvas(canvas) {
   if (!canvas) return;
   _test3SparkleStopCanvas(canvas);
-  _ensureTest1P2GalaxyStarScript(function () {
+  _ensureTest1GalaxyAiLogoScript(function () {
     if (!canvas.isConnected) return;
-    if (window.P2GalaxyStar && typeof window.P2GalaxyStar.mount === 'function') {
-      window.P2GalaxyStar.mount(canvas.parentNode || canvas, {
-        allowAnyScope: true,
-        whiteOnly: true,
-        renderOffset: { x: -17.6, y: 17.6 },
-        renderOptions: {
-          bigScale: 1.18
-        }
-      });
+    if (window.__test1GalaxyAiLogo && typeof window.__test1GalaxyAiLogo.mountCanvas === 'function') {
+      window.__test1GalaxyAiLogo.mountCanvas(canvas, { whiteOnly: true, fixedLayout: true });
     }
   });
 }
