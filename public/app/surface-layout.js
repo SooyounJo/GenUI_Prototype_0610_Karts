@@ -358,11 +358,11 @@ function _syncTest3MusicDiscLoaderAfterRender() {
   }
 }
 
-/** test3 disc star phase — reuses test1 Galaxy AI logo motion (white-only). */
+/** test3 disc star phase — reuses the tuned test1 white P2 Galaxy star motion. */
 var TEST3_DISC_SPARKLE_PX = 88;
 
 function renderTest3MusicDiscSparkleHtml() {
-  return '<canvas class="test3-music-disc__sparkleCanvas" width="' + TEST3_DISC_SPARKLE_PX +
+  return '<canvas class="test3-music-disc__sparkleCanvas p2-galaxy-star__canvas" width="' + TEST3_DISC_SPARKLE_PX +
     '" height="' + TEST3_DISC_SPARKLE_PX + '" aria-hidden="true"></canvas>';
 }
 
@@ -370,6 +370,9 @@ function _test3SparkleStopCanvas(canvas) {
   if (!canvas) return;
   if (window.__test1GalaxyAiLogo && typeof window.__test1GalaxyAiLogo.unmountCanvas === 'function') {
     window.__test1GalaxyAiLogo.unmountCanvas(canvas);
+  }
+  if (window.P2GalaxyStar && typeof window.P2GalaxyStar.unmount === 'function') {
+    window.P2GalaxyStar.unmount({ removeCanvas: false });
   }
 }
 function _stopTest3MusicDiscSparkle(music) {
@@ -386,10 +389,17 @@ function _stopTest3MusicDiscSparkle(music) {
 function _startTest3MusicDiscSparkleCanvas(canvas) {
   if (!canvas) return;
   _test3SparkleStopCanvas(canvas);
-  _ensureTest1GalaxyAiLogoScript(function () {
+  _ensureTest1P2GalaxyStarScript(function () {
     if (!canvas.isConnected) return;
-    if (window.__test1GalaxyAiLogo && typeof window.__test1GalaxyAiLogo.mountCanvas === 'function') {
-      window.__test1GalaxyAiLogo.mountCanvas(canvas, { whiteOnly: true, fixedLayout: true });
+    if (window.P2GalaxyStar && typeof window.P2GalaxyStar.mount === 'function') {
+      window.P2GalaxyStar.mount(canvas.parentNode || canvas, {
+        allowAnyScope: true,
+        whiteOnly: true,
+        renderOffset: { x: -17.6, y: 17.6 },
+        renderOptions: {
+          bigScale: 1.18
+        }
+      });
     }
   });
 }
@@ -610,99 +620,27 @@ var TEST3_MUSIC_GLOW_FADE_MS = 1000;
 var TEST3_MUSIC_FILL_FADE_MS = 1400;
 var TEST3_MUSIC_ENTRANCE_END_MS = TEST3_MUSIC_MOTION_MS;
 
-/** Figma 5436:15945 — test1 status bar (time + live pill + system icons). */
-function renderTest1HealthStatusBar(props) {
-  var p = props || {};
-  var asset = 'assets/test1/status-bar/';
-  var time = p.time || '9:41';
-  var liveTimer = p.liveTimer || '1:02:59';
+/** test1 status bar image layer. */
+function renderTest1HealthStatusBar() {
   var fill = 'width:100%;height:100%;box-sizing:border-box;';
   return '<div class="test1-status-bar" style="' + fill + '">' +
-           '<div class="test1-status-bar__left">' +
-             '<span class="test1-status-bar__time">' + time + '</span>' +
-             '<div class="test1-status-bar__live" aria-hidden="true">' +
-               '<span class="test1-status-bar__live-icon">' +
-                 '<img src="' + asset + 'phone-live.svg" alt="" />' +
-               '</span>' +
-               '<span class="test1-status-bar__live-timer">' + liveTimer + '</span>' +
-             '</div>' +
-           '</div>' +
-           '<div class="test1-status-bar__right">' +
-             '<div class="test1-status-bar__icon test1-status-bar__icon--wifi" aria-hidden="true">' +
-               '<img src="' + asset + 'wifi.svg" alt="" />' +
-             '</div>' +
-             '<div class="test1-status-bar__icon test1-status-bar__icon--cell" aria-hidden="true">' +
-               '<img src="' + asset + 'cellular.svg" alt="" />' +
-             '</div>' +
-             '<div class="test1-status-bar__battery" aria-hidden="true">' +
-               '<img class="test1-status-bar__battery-left" src="' + asset + 'battery-left.svg" alt="" />' +
-               '<img class="test1-status-bar__battery-right" src="' + asset + 'battery-right.svg" alt="" />' +
-             '</div>' +
-           '</div>' +
+           '<img class="test1-status-bar__image" src="/status.png" alt="" draggable="false" />' +
          '</div>';
 }
 
-/** Figma 5436:15945 — test2 status bar (time + live pill + system icons). */
-function renderTest2HealthStatusBar(props) {
-  var p = props || {};
-  var asset = 'assets/test2/status-bar/';
-  var time = p.time || '9:41';
-  var liveTimer = p.liveTimer || '1:02:59';
+/** test2 status bar image layer. */
+function renderTest2HealthStatusBar() {
   var fill = 'width:100%;height:100%;box-sizing:border-box;';
   return '<div class="test2-status-bar" style="' + fill + '">' +
-           '<div class="test2-status-bar__left">' +
-             '<span class="test2-status-bar__time">' + time + '</span>' +
-             '<div class="test2-status-bar__live" aria-hidden="true">' +
-               '<span class="test2-status-bar__live-icon">' +
-                 '<img src="' + asset + 'phone-live.svg" alt="" />' +
-               '</span>' +
-               '<span class="test2-status-bar__live-timer">' + liveTimer + '</span>' +
-             '</div>' +
-           '</div>' +
-           '<div class="test2-status-bar__right">' +
-             '<div class="test2-status-bar__icon test2-status-bar__icon--wifi" aria-hidden="true">' +
-               '<img src="' + asset + 'wifi.svg" alt="" />' +
-             '</div>' +
-             '<div class="test2-status-bar__icon test2-status-bar__icon--cell" aria-hidden="true">' +
-               '<img src="' + asset + 'cellular.svg" alt="" />' +
-             '</div>' +
-             '<div class="test2-status-bar__battery" aria-hidden="true">' +
-               '<img class="test2-status-bar__battery-left" src="' + asset + 'battery-left.svg" alt="" />' +
-               '<img class="test2-status-bar__battery-right" src="' + asset + 'battery-right.svg" alt="" />' +
-             '</div>' +
-           '</div>' +
+           '<img class="test2-status-bar__image" src="/status.png" alt="" draggable="false" />' +
          '</div>';
 }
 
-/** Figma 5436:15945 — test3 status bar (time + live pill + system icons). */
-function renderTest3HealthStatusBar(props) {
-  var p = props || {};
-  var asset = 'assets/test3/';
-  var time = p.time || '9:41';
-  var liveTimer = p.liveTimer || '1:03:59';
+/** test3 status bar image layer. */
+function renderTest3HealthStatusBar() {
   var fill = 'width:100%;height:100%;box-sizing:border-box;';
   return '<div class="test3-status-bar" style="' + fill + '">' +
-           '<div class="test3-status-bar__left">' +
-             '<span class="test3-status-bar__time">' + time + '</span>' +
-             '<div class="test3-status-bar__live" aria-hidden="true">' +
-               '<span class="test3-status-bar__live-icon">' +
-                 '<img src="' + asset + 'phone-live.svg" alt="" />' +
-               '</span>' +
-               '<span class="test3-status-bar__live-timer">' + liveTimer + '</span>' +
-             '</div>' +
-           '</div>' +
-           '<div class="test3-status-bar__right">' +
-             '<div class="test3-status-bar__icon test3-status-bar__icon--wifi" aria-hidden="true">' +
-               '<img src="' + asset + 'wifi.svg" alt="" />' +
-             '</div>' +
-             '<div class="test3-status-bar__icon test3-status-bar__icon--cell" aria-hidden="true">' +
-               '<img src="' + asset + 'cellular.svg" alt="" />' +
-             '</div>' +
-             '<div class="test3-status-bar__battery" aria-hidden="true">' +
-               '<img class="test3-status-bar__battery-left" src="' + asset + 'battery-left.svg" alt="" />' +
-               '<img class="test3-status-bar__battery-right" src="' + asset + 'battery-right.svg" alt="" />' +
-             '</div>' +
-           '</div>' +
+           '<img class="test3-status-bar__image" src="/status.png" alt="" draggable="false" />' +
          '</div>';
 }
 
@@ -7577,7 +7515,7 @@ window.renderAtomicForRole = function renderAtomicForRole(comp, rect) {
             '<circle class="test1-bottom-pill__icon" cx="26.2791" cy="26.2791" r="19.2713" fill="#155E75"/>' +
             '<foreignObject x="7.0078" y="7.0078" width="38.5426" height="38.5426">' +
               '<div xmlns="http://www.w3.org/1999/xhtml" class="test1-bottom-pill__ai-logo-slot">' +
-                '<canvas class="test1-bottom-pill__ai-logo"></canvas>' +
+                '<canvas class="test1-bottom-pill__ai-logo p2-galaxy-star__canvas" width="112" height="112"></canvas>' +
               '</div>' +
             '</foreignObject>' +
           '</g>' +
@@ -12434,7 +12372,7 @@ function installTest2GalaxyStar(canvas) {
   }
 
   var script = document.createElement('script');
-  script.src = '/app/p2-galaxy-star.js?v=11';
+  script.src = '/app/p2-galaxy-star.js?v=12';
   script.dataset.p2GalaxyStar = '1';
   script.onload = boot;
   document.head.appendChild(script);
@@ -12838,6 +12776,9 @@ function _unmountTest1BottomPillAiLogo() {
     if (pill && window.__test1GalaxyAiLogo && typeof window.__test1GalaxyAiLogo.unmount === 'function') {
       window.__test1GalaxyAiLogo.unmount(pill);
     }
+    if (window.P2GalaxyStar && typeof window.P2GalaxyStar.unmount === 'function') {
+      window.P2GalaxyStar.unmount({ removeCanvas: false });
+    }
   } catch (_) {}
 }
 
@@ -12886,6 +12827,30 @@ function _ensureTest1GalaxyAiLogoScript(done) {
   };
   script.onerror = function () {
     window.__mlpTest1GalaxyAiLogoLoading = null;
+  };
+  document.head.appendChild(script);
+}
+
+function _ensureTest1P2GalaxyStarScript(done) {
+  if (window.P2GalaxyStar && typeof window.P2GalaxyStar.mount === 'function') {
+    done();
+    return;
+  }
+  if (window.__mlpTest1P2GalaxyStarLoading) {
+    window.__mlpTest1P2GalaxyStarLoading.push(done);
+    return;
+  }
+  window.__mlpTest1P2GalaxyStarLoading = [done];
+  var script = document.createElement('script');
+  script.src = '/app/p2-galaxy-star.js?v=12';
+  script.setAttribute('data-mlp-test1-p2-galaxy-star', '1');
+  script.onload = function () {
+    var queue = window.__mlpTest1P2GalaxyStarLoading || [];
+    window.__mlpTest1P2GalaxyStarLoading = null;
+    queue.forEach(function (fn) { try { fn(); } catch (_) {} });
+  };
+  script.onerror = function () {
+    window.__mlpTest1P2GalaxyStarLoading = null;
   };
   document.head.appendChild(script);
 }
@@ -13060,13 +13025,13 @@ function _pauseTest1BottomPillAiLogo() {
   try {
     var pill = document.querySelector('#test1-bottom-pill');
     if (!pill) return;
-    if (window.__test1GalaxyAiLogo && typeof window.__test1GalaxyAiLogo.pause === 'function') {
-      window.__test1GalaxyAiLogo.pause(pill);
+    if (window.P2GalaxyStar && typeof window.P2GalaxyStar.setPhase === 'function') {
+      window.P2GalaxyStar.setPhase('centerBig');
       return;
     }
-    _ensureTest1GalaxyAiLogoScript(function () {
-      if (window.__test1GalaxyAiLogo && typeof window.__test1GalaxyAiLogo.pause === 'function') {
-        window.__test1GalaxyAiLogo.pause(pill);
+    _ensureTest1P2GalaxyStarScript(function () {
+      if (window.P2GalaxyStar && typeof window.P2GalaxyStar.setPhase === 'function') {
+        window.P2GalaxyStar.setPhase('centerBig');
       }
     });
   } catch (_) {}
@@ -13076,9 +13041,19 @@ function _mountTest1BottomPillAiLogo() {
   try {
     var pill = document.querySelector('#test1-bottom-pill');
     if (!pill) return;
-    _ensureTest1GalaxyAiLogoScript(function () {
-      if (window.__test1GalaxyAiLogo && typeof window.__test1GalaxyAiLogo.mount === 'function') {
-        window.__test1GalaxyAiLogo.mount(pill);
+    var slot = pill.querySelector('.test1-bottom-pill__ai-logo-slot');
+    if (!slot) return;
+    _ensureTest1P2GalaxyStarScript(function () {
+      if (window.P2GalaxyStar && typeof window.P2GalaxyStar.mount === 'function') {
+        window.P2GalaxyStar.mount(slot, {
+          allowAnyScope: true,
+          whiteOnly: true,
+          renderOffset: { x: -17.6, y: 17.6 },
+          renderOptions: {
+            bigScale: 1.18,
+            fadeBigAtCenterTarget: true
+          }
+        });
       }
     });
   } catch (_) {}

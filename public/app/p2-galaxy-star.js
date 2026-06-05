@@ -304,9 +304,12 @@
     };
   }
 
-  function renderStarFrame(ctx, frameCount, f, frameInLoop) {
+  function renderStarFrame(ctx, frameCount, f, frameInLoop, whiteOnly, renderOffset, renderOptions) {
+    renderOffset = renderOffset || { x: 0, y: 0 };
+    renderOptions = renderOptions || {};
     ctx.save();
     ctx.translate(CENTER, CENTER);
+    ctx.translate(renderOffset.x || 0, renderOffset.y || 0);
     ctx.rotate(Math.sin(frameCount * 0.5 * Math.PI / 180) * (1.5 * Math.PI / 180));
     ctx.rotate(f.groupAngle);
 
@@ -318,8 +321,13 @@
     ctx.save();
     ctx.translate(f.bigPos.x, f.bigPos.y);
     ctx.rotate(f.bigAngle);
-    ctx.scale(pulseBig, pulseBig);
-    var bigColor = lerpColor(COLOR_BIG_HOME, COLOR_BIG_TARGET, colorMorphFactor(f.colorMorphAmt));
+    ctx.scale(pulseBig * (renderOptions.bigScale || 1), pulseBig * (renderOptions.bigScale || 1));
+    if (renderOptions.fadeBigAtCenterTarget) {
+      var centerTarget = scalePos(TR_HOME);
+      var distToCenterTarget = magV(subV(f.bigPos, centerTarget));
+      ctx.globalAlpha *= clamp(1 - distToCenterTarget / 10.5, 0, 1);
+    }
+    var bigColor = whiteOnly ? COLOR_BIG_HOME : lerpColor(COLOR_BIG_HOME, COLOR_BIG_TARGET, colorMorphFactor(f.colorMorphAmt));
     ctx.fillStyle = toCss(bigColor);
     drawDenseMorphSparkle(ctx, 75, f.morphBL);
     ctx.restore();
@@ -343,13 +351,13 @@
       ctx.translate(finalPos.x, finalPos.y);
       var smallPulse = 1 + Math.sin(frameCount * s.pulseSpeed * Math.PI / 180 + s.pulsePhase * Math.PI / 180) * 0.14;
       ctx.scale(smallPulse * dynamicScale * s.rhythm * s.mergeScale, smallPulse * dynamicScale * s.rhythm * s.mergeScale);
-      ctx.fillStyle = toCss(s.col);
+      ctx.fillStyle = toCss(whiteOnly ? COLOR_BIG_HOME : s.col);
       drawDenseMorphSparkle(ctx, s.size, s.morph);
       ctx.restore();
     });
 
     ctx.save();
-    ctx.fillStyle = toCss(COLOR_SIZE32);
+    ctx.fillStyle = toCss(whiteOnly ? COLOR_BIG_HOME : COLOR_SIZE32);
     ctx.translate(f.trPos.x, f.trPos.y);
     var finalTRScale = frameInLoop < IDLE_FRAMES ? pulseTR * f.trActiveScale : pulseTR * f.mergeScaleTR;
     ctx.scale(finalTRScale, finalTRScale);
@@ -359,22 +367,22 @@
     ctx.restore();
   }
 
-  function drawStarScene(ctx, frameCount, frameInLoop, reactiveBlast) {
+  function drawStarScene(ctx, frameCount, frameInLoop, reactiveBlast, whiteOnly, renderOffset, renderOptions) {
     ctx.clearRect(0, 0, CANVAS_PX, CANVAS_PX);
     var f = computeFrame(frameInLoop, reactiveBlast);
-    renderStarFrame(ctx, frameCount, f, frameInLoop);
+    renderStarFrame(ctx, frameCount, f, frameInLoop, whiteOnly, renderOffset, renderOptions);
   }
 
-  function drawActiveMerged(ctx, frameCount, activeFrame, skipClear) {
+  function drawActiveMerged(ctx, frameCount, activeFrame, skipClear, whiteOnly, renderOffset, renderOptions) {
     if (!skipClear) ctx.clearRect(0, 0, CANVAS_PX, CANVAS_PX);
     var cycleT = (activeFrame % ACTIVE_CYCLE) / ACTIVE_CYCLE;
     var blend = cycleT < 0.5 ? easeInOutQuint(cycleT * 2) : easeInOutQuint(2 - cycleT * 2);
     var f = interpolateFrameState(getClusterState(), getMergedState(), blend);
     f.groupAngle = activeFrame * 1.6 * Math.PI / 180;
-    renderStarFrame(ctx, frameCount, f, MERGE_END);
+    renderStarFrame(ctx, frameCount, f, MERGE_END, whiteOnly, renderOffset, renderOptions);
   }
 
-  function drawBreathingChord(ctx, frameCount, musicTime, introT, trails, skipClear) {
+  function drawBreathingChord(ctx, frameCount, musicTime, introT, trails, skipClear, whiteOnly) {
     if (!skipClear) ctx.clearRect(0, 0, CANVAS_PX, CANVAS_PX);
     var cx = CENTER;
     var cy = CENTER;
@@ -426,7 +434,7 @@
         var sample = hist[h];
         var ageT = last <= 0 ? 0 : h / last;
         var trailAlpha = lerp(0.18, 0.95, ageT) * Math.min(1, spreadT + 0.15);
-        var trailCol = lerpColor(COLOR_SIZE32, COLOR_BIG_HOME, ageT);
+        var trailCol = whiteOnly ? COLOR_BIG_HOME : lerpColor(COLOR_SIZE32, COLOR_BIG_HOME, ageT);
         ctx.strokeStyle = toCssA(trailCol, trailAlpha * 0.88);
         ctx.lineWidth = 1.05;
         ctx.beginPath();
@@ -438,7 +446,7 @@
     for (var di = 0; di < LOADING_N; di++) {
       var p = positions[di];
       var yellowAmt = 0.15 + 0.85 * (0.5 + 0.5 * Math.sin(t * 1.6 - di * phaseStep));
-      var col = lerpColor(COLOR_BIG_HOME, COLOR_SIZE32, yellowAmt);
+      var col = whiteOnly ? COLOR_BIG_HOME : lerpColor(COLOR_BIG_HOME, COLOR_SIZE32, yellowAmt);
       ctx.fillStyle = toCssA(col, 0.97);
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
@@ -446,25 +454,29 @@
     }
   }
 
-  function drawLoadingPhase(ctx, frameCount, activeFrame, musicTime, enterT, trails) {
+  function drawLoadingPhase(ctx, frameCount, activeFrame, musicTime, enterT, trails, whiteOnly, renderOffset, renderOptions) {
     var easedEnter = easeInOutQuint(enterT);
     ctx.clearRect(0, 0, CANVAS_PX, CANVAS_PX);
     if (easedEnter < 1) {
       ctx.save();
       ctx.globalAlpha = 1 - easedEnter;
-      drawActiveMerged(ctx, frameCount, activeFrame, true);
+      drawActiveMerged(ctx, frameCount, activeFrame, true, whiteOnly, renderOffset, renderOptions);
       ctx.restore();
       ctx.save();
       ctx.globalAlpha = easedEnter;
-      drawBreathingChord(ctx, frameCount, musicTime, easedEnter, trails, true);
+      drawBreathingChord(ctx, frameCount, musicTime, easedEnter, trails, true, whiteOnly);
       ctx.restore();
       return;
     }
-    drawBreathingChord(ctx, frameCount, musicTime, 1, trails, false);
+    drawBreathingChord(ctx, frameCount, musicTime, 1, trails, false, whiteOnly);
   }
 
-  function GalaxyStarController(starEl) {
+  function GalaxyStarController(starEl, options) {
+    options = options || {};
     this.starEl = starEl;
+    this.whiteOnly = !!options.whiteOnly;
+    this.renderOffset = options.renderOffset || { x: 0, y: 0 };
+    this.renderOptions = options.renderOptions || {};
     this.canvas = null;
     this.ctx = null;
     this.raf = 0;
@@ -595,6 +607,19 @@
       this._syncVoiceGrad();
       return;
     }
+    if (next === 'centerBig') {
+      this.phase = 'centerBig';
+      this.mergeFrame = 0;
+      this.activeFrame = 0;
+      this.idleFrame = Math.floor(IDLE_FRAMES * 0.25);
+      this.loadingEnterT = 0;
+      this.loadingTime = 0;
+      this.loadingTrails = [[], [], [], [], []];
+      this.reactiveBlast = { TL: 0, BR: 0 };
+      this._syncVoiceGrad();
+      this._draw();
+      return;
+    }
     if (next === 'idle') {
       this.phase = 'idle';
       this.mergeFrame = 0;
@@ -611,18 +636,22 @@
   GalaxyStarController.prototype._renderTo = function (ctx) {
     if (!ctx) return;
     if (this.phase === 'loading') {
-      drawLoadingPhase(ctx, this.frameCount, this.activeFrame, this.loadingTime, this.loadingEnterT, this.loadingTrails);
+      drawLoadingPhase(ctx, this.frameCount, this.activeFrame, this.loadingTime, this.loadingEnterT, this.loadingTrails, this.whiteOnly, this.renderOffset, this.renderOptions);
       return;
     }
     if (this.phase === 'active') {
-      drawActiveMerged(ctx, this.frameCount, this.activeFrame);
+      drawActiveMerged(ctx, this.frameCount, this.activeFrame, false, this.whiteOnly, this.renderOffset, this.renderOptions);
       return;
     }
     if (this.phase === 'merge') {
-      drawStarScene(ctx, this.frameCount, this.mergeFrame, this.reactiveBlast);
+      drawStarScene(ctx, this.frameCount, this.mergeFrame, this.reactiveBlast, this.whiteOnly, this.renderOffset, this.renderOptions);
       return;
     }
-    drawStarScene(ctx, this.frameCount, this.idleFrame, this.reactiveBlast);
+    if (this.phase === 'centerBig') {
+      drawStarScene(ctx, 0, Math.floor(IDLE_FRAMES * 0.25), { TL: 0, BR: 0 }, this.whiteOnly, this.renderOffset, this.renderOptions);
+      return;
+    }
+    drawStarScene(ctx, this.frameCount, this.idleFrame, this.reactiveBlast, this.whiteOnly, this.renderOffset, this.renderOptions);
   };
 
   GalaxyStarController.prototype._draw = function () {
@@ -689,20 +718,22 @@
   }
 
   window.P2GalaxyStar = {
-    mount: function (starEl) {
-      if (!isTest2Scope()) return false;
+    mount: function (starEl, options) {
+      options = options || {};
+      if (!options.allowAnyScope && !isTest2Scope()) return false;
       if (!starEl) starEl = document.getElementById('p2-star');
       if (!starEl) return false;
       if (current) current.destroy(false);
-      current = new GalaxyStarController(starEl);
+      current = new GalaxyStarController(starEl, options);
       return current.mount();
     },
     setPhase: function (phase) {
       if (current) current.setPhase(phase);
     },
-    unmount: function () {
+    unmount: function (options) {
+      options = options || {};
       if (current) {
-        current.destroy(true);
+        current.destroy(options.removeCanvas === false ? false : true);
         current = null;
       }
     },

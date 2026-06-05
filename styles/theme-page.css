@@ -312,112 +312,38 @@
   .mlp-phone #canvas[data-test-scope="test2"] #status-bar,
   #canvas[data-test-scope="test2"] .canvas-item[data-role="status-bar"],
   #canvas[data-test-scope="test2"] #status-bar {
+    left: 13.22px !important;
+    top: 19.64px !important;
+    width: 384.64px !important;
+    height: 40.86px !important;
     display: block !important;
     visibility: visible !important;
     pointer-events: none !important;
     z-index: 550 !important;
     opacity: 1 !important;
     animation: none !important;
-    transform: none !important;
+    transform: scale(0.94) !important;
+    transform-origin: top left !important;
   }
   #canvas[data-test-scope="test2"] .test2-status-bar {
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 384.64px;
+    height: 40.86px;
     box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 10px;
-    gap: 8px;
-  }
-  #canvas[data-test-scope="test2"] .test2-status-bar__left {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 5px;
-    flex-shrink: 0;
-    min-width: 0;
-  }
-  #canvas[data-test-scope="test2"] .test2-status-bar__time {
-    font-family: 'Pretendard', var(--font), -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: 0.12px;
-    color: rgba(255, 255, 255, 0.8);
-    white-space: nowrap;
-    font-feature-settings: 'dlig' 1, 'lnum' 1, 'pnum' 1;
-  }
-  #canvas[data-test-scope="test2"] .test2-status-bar__live {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 7px 4px 4px;
-    border-radius: 11px;
-    background: #0fcf6e;
-    flex-shrink: 0;
-    transform: translateY(-2px);
-  }
-  #canvas[data-test-scope="test2"] .test2-status-bar__live-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 11px;
-    height: 11px;
-    flex-shrink: 0;
-  }
-  #canvas[data-test-scope="test2"] .test2-status-bar__live-icon img {
     display: block;
-    width: 100%;
-    height: 100%;
-  }
-  #canvas[data-test-scope="test2"] .test2-status-bar__live-timer {
-    font-family: 'Pretendard', var(--font), -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 5px;
-    font-weight: 600;
-    line-height: 1;
-    letter-spacing: 0.06px;
-    color: #ffffff;
-    white-space: nowrap;
-    font-feature-settings: 'dlig' 1, 'lnum' 1, 'pnum' 1;
-  }
-  #canvas[data-test-scope="test2"] .test2-status-bar__right {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 3px;
-    flex-shrink: 0;
-  }
-  #canvas[data-test-scope="test2"] .test2-status-bar__icon {
-    position: relative;
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
+    padding: 0;
     overflow: hidden;
   }
-  #canvas[data-test-scope="test2"] .test2-status-bar__icon img {
+  #canvas[data-test-scope="test2"] .test2-status-bar__image {
     display: block;
     width: 100%;
     height: 100%;
-  }
-  #canvas[data-test-scope="test2"] .test2-status-bar__battery {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    flex-shrink: 0;
-  }
-  #canvas[data-test-scope="test2"] .test2-status-bar__battery-left {
-    display: block;
-    width: 12px;
-    height: 13px;
-  }
-  #canvas[data-test-scope="test2"] .test2-status-bar__battery-right {
-    display: block;
-    width: 7px;
-    height: 13px;
+    object-fit: contain;
+    object-position: center;
+    user-select: none;
+    pointer-events: none;
   }
   /* test2 — lock screen shortcuts (Figma lock screen shortcut) */
   #canvas[data-test-scope="test2"] .canvas-item[data-role="shortcutLeft"] .test2-lock-shortcut--phone,
@@ -4157,113 +4083,38 @@
   .mlp-phone #canvas[data-test-scope="test3"] #status-bar,
   #canvas[data-test-scope="test3"] .canvas-item[data-role="status-bar"],
   #canvas[data-test-scope="test3"] #status-bar {
+    left: 13.22px !important;
+    top: 19.64px !important;
+    width: 384.64px !important;
+    height: 40.86px !important;
     display: block !important;
     visibility: visible !important;
     pointer-events: none !important;
     z-index: 550 !important;
     opacity: 1 !important;
     animation: none !important;
-    transform: none !important;
+    transform: scale(0.94) !important;
+    transform-origin: top left !important;
   }
-  /* Figma 5436:15945 — time + live pill (left) · status icons (right) */
   #canvas[data-test-scope="test3"] .test3-status-bar {
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 384.64px;
+    height: 40.86px;
     box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 10px;
-    gap: 8px;
-  }
-  #canvas[data-test-scope="test3"] .test3-status-bar__left {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 5px;
-    flex-shrink: 0;
-    min-width: 0;
-  }
-  #canvas[data-test-scope="test3"] .test3-status-bar__time {
-    font-family: 'Pretendard', var(--font), -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: 0.12px;
-    color: rgba(255, 255, 255, 0.8);
-    white-space: nowrap;
-    font-feature-settings: 'dlig' 1, 'lnum' 1, 'pnum' 1;
-  }
-  #canvas[data-test-scope="test3"] .test3-status-bar__live {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 7px 4px 4px;
-    border-radius: 11px;
-    background: #0fcf6e;
-    flex-shrink: 0;
-    transform: translateY(-2px);
-  }
-  #canvas[data-test-scope="test3"] .test3-status-bar__live-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 11px;
-    height: 11px;
-    flex-shrink: 0;
-  }
-  #canvas[data-test-scope="test3"] .test3-status-bar__live-icon img {
     display: block;
-    width: 100%;
-    height: 100%;
-  }
-  #canvas[data-test-scope="test3"] .test3-status-bar__live-timer {
-    font-family: 'Pretendard', var(--font), -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 5px;
-    font-weight: 600;
-    line-height: 1;
-    letter-spacing: 0.06px;
-    color: #ffffff;
-    white-space: nowrap;
-    font-feature-settings: 'dlig' 1, 'lnum' 1, 'pnum' 1;
-  }
-  #canvas[data-test-scope="test3"] .test3-status-bar__right {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 3px;
-    flex-shrink: 0;
-  }
-  #canvas[data-test-scope="test3"] .test3-status-bar__icon {
-    position: relative;
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
+    padding: 0;
     overflow: hidden;
   }
-  #canvas[data-test-scope="test3"] .test3-status-bar__icon img {
+  #canvas[data-test-scope="test3"] .test3-status-bar__image {
     display: block;
     width: 100%;
     height: 100%;
-  }
-  #canvas[data-test-scope="test3"] .test3-status-bar__battery {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    flex-shrink: 0;
-  }
-  #canvas[data-test-scope="test3"] .test3-status-bar__battery-left {
-    display: block;
-    width: 12px;
-    height: 13px;
-  }
-  #canvas[data-test-scope="test3"] .test3-status-bar__battery-right {
-    display: block;
-    width: 7px;
-    height: 13px;
+    object-fit: contain;
+    object-position: center;
+    user-select: none;
+    pointer-events: none;
   }
 
   /* test3 (health home): intro prompt morphs into Today's Goal.
@@ -8189,6 +8040,23 @@
     margin: 0;
     pointer-events: none;
     transition: opacity var(--test3-disc-crossfade-ms, 720ms) var(--test3-disc-crossfade-ease, cubic-bezier(0.22, 0.82, 0.24, 1));
+  }
+  #canvas[data-test-scope="test3"] #test3-music .test3-music-disc__layer--star.p2-galaxy-star-btn {
+    background: transparent !important;
+    border: 0;
+    padding: 0;
+    box-shadow: none !important;
+    overflow: hidden !important;
+  }
+  #canvas[data-test-scope="test3"] #test3-music .test3-music-disc__layer--star .p2-galaxy-star__grad {
+    display: none !important;
+  }
+  #canvas[data-test-scope="test3"] #test3-music .test3-music-disc__layer--star .p2-galaxy-star__canvas {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    pointer-events: none;
   }
   #canvas[data-test-scope="test3"] #test3-music .test3-music-disc__layer--star {
     opacity: 1;
@@ -18522,119 +18390,37 @@
   .mlp-phone #canvas[data-test-scope="test1"] #status-bar,
   #canvas[data-test-scope="test1"] .canvas-item[data-role="status-bar"],
   #canvas[data-test-scope="test1"] #status-bar {
+    left: 13.22px !important;
+    top: 19.64px !important;
+    width: 384.64px !important;
+    height: 40.86px !important;
     visibility: visible !important;
     pointer-events: none !important;
     z-index: 550 !important;
     opacity: 1 !important;
     animation: none !important;
-    transform: none !important;
+    transform: scale(0.94) !important;
+    transform-origin: top left !important;
   }
   #canvas[data-test-scope="test1"] .test1-status-bar {
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 384.64px;
+    height: 40.86px;
     box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 10px;
-    gap: 8px;
-  }
-  #canvas[data-test-scope="test1"] .test1-status-bar__left {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 5px;
-    flex-shrink: 0;
-    min-width: 0;
-  }
-  #canvas[data-test-scope="test1"] .test1-status-bar__time {
-    font-family: 'Pretendard', var(--font), -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: 0.12px;
-    color: rgba(255, 255, 255, 0.8);
-    white-space: nowrap;
-    font-feature-settings: 'dlig' 1, 'lnum' 1, 'pnum' 1;
-  }
-  #canvas[data-test-scope="test1"] .test1-status-bar__live {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 7px 4px 4px;
-    border-radius: 11px;
-    background: #0fcf6e;
-    flex-shrink: 0;
-    transform: translateY(-2px);
-  }
-  #canvas[data-test-scope="test1"] .test1-status-bar__live-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 11px;
-    height: 11px;
-    flex-shrink: 0;
-  }
-  #canvas[data-test-scope="test1"] .test1-status-bar__live-icon img {
     display: block;
-    width: 100%;
-    height: 100%;
-  }
-  #canvas[data-test-scope="test1"] .test1-status-bar__live-timer {
-    font-family: 'Pretendard', var(--font), -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 5px;
-    font-weight: 600;
-    line-height: 1;
-    letter-spacing: 0.06px;
-    color: #ffffff;
-    white-space: nowrap;
-    font-feature-settings: 'dlig' 1, 'lnum' 1, 'pnum' 1;
-  }
-  #canvas[data-test-scope="test1"] .test1-status-bar__right {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 3px;
-    flex-shrink: 0;
-  }
-  #canvas[data-test-scope="test1"] .test1-status-bar__icon {
-    position: relative;
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
+    padding: 0;
     overflow: hidden;
   }
-  #canvas[data-test-scope="test1"] .test1-status-bar__icon img {
+  #canvas[data-test-scope="test1"] .test1-status-bar__image {
     display: block;
     width: 100%;
     height: 100%;
-  }
-  #canvas[data-test-scope="test1"] .test1-status-bar__battery {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    flex-shrink: 0;
-  }
-  #canvas[data-test-scope="test1"] .test1-status-bar__battery-left {
-    display: block;
-    width: 12px;
-    height: 13px;
-  }
-  #canvas[data-test-scope="test1"] .test1-status-bar__battery-right {
-    display: block;
-    width: 7px;
-    height: 13px;
-  }
-
-  #canvas[data-test-scope="test1"][data-test1-home-run] .test1-status-bar__time {
-    color: rgba(10, 61, 88, 0.92);
-  }
-
-  #canvas[data-test-scope="test1"][data-test1-home-run] .test1-status-bar__live {
-    display: none !important;
+    object-fit: contain;
+    object-position: center;
+    user-select: none;
+    pointer-events: none;
   }
 
   #canvas[data-test-scope="test1"]:not([data-test1-home-run]):not([data-test1-home-prep]):not([data-test1-reveal-all]) .canvas-item[data-role="test1-lock-stack"],
@@ -19892,10 +19678,39 @@
     pointer-events: none;
   }
 
+  #canvas[data-test-scope="test1"] .test1-bottom-pill__ai-logo-slot.p2-galaxy-star-btn {
+    position: relative;
+    background: transparent !important;
+    border: 0;
+    padding: 0;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+
+  #canvas[data-test-scope="test1"] .test1-bottom-pill__ai-logo-slot .p2-galaxy-star__grad {
+    display: none !important;
+  }
+
   #canvas[data-test-scope="test1"] .test1-bottom-pill__ai-logo {
     display: block;
     width: 100%;
     height: 100%;
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  #canvas[data-test-scope="test1"] .test1-bottom-pill__ai-logo-slot .p2-galaxy-star__canvas {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    flex: 0 0 100% !important;
+    object-fit: contain;
     pointer-events: none;
   }
 
