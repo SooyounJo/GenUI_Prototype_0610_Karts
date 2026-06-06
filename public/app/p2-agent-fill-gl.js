@@ -293,10 +293,12 @@
     '  float outerBleed = exp(-max(sdf, 0.0) * 14.5)',
     '    * (1.0 - smoothstep(0.0, 0.040, max(-sdf, 0.0))) * 0.68;',
     '  edgeBand = max(edgeBand, max(softRing * 0.78, outerBleed));',
+    '  edgeBand *= mix(1.0, 1.0 - smoothstep(0.30, 0.62, uv.y), step(3.5, u_variant));',
     '  vec2 originPlane = vec2((u_origin.x - 0.5) * aspect, u_origin.y - 0.5);',
     '  float startAngle = atan(originPlane.y, originPlane.x + 0.0001);',
     '  float pointAngle = atan(p.y, p.x + 0.0001);',
     '  float posFromStart = fract((pointAngle - startAngle) / 6.28318530718 + 1.0);',
+    '  posFromStart = mix(posFromStart, clamp(uv.x, 0.0, 1.0), step(3.5, u_variant));',
     '  float head = clamp(sweep, 0.0, 1.0);',
     '  float passed = 1.0 - smoothstep(head - 0.022, head + 0.034, posFromStart);',
     '  float trailDist = head - posFromStart;',
@@ -1105,7 +1107,6 @@
     hollowReveal: 'settling',
     settling: 'fadeOut'
   };
-
   function Test3MusicFillGL() {
     AgentFillGL.call(this);
     this._meshVariant = 4;
@@ -1114,11 +1115,11 @@
   Test3MusicFillGL.prototype.constructor = Test3MusicFillGL;
 
   Test3MusicFillGL.prototype._getOrigin = function () {
-    /* Entrance phases share the left disc origin so the sweep never jumps. */
-    if (this.phase === 'listening' || this.phase === 'generating') {
+    /* Listening: left orb — perimeter sweep starts at sparkle disc. */
+    if (this.phase === 'listening') {
       return [0.11, 0.5];
     }
-    /* Fade out retires toward the right edge after the card has resolved. */
+    /* Generating / fadeOut: right edge — gauge fills right → left. */
     return [0.90, 0.5];
   };
 
@@ -1157,40 +1158,26 @@
       var t = this.phaseDuration > 0
         ? clamp((now - this.phaseStart) / this.phaseDuration, 0, 1)
         : 1;
-      var sweepPortion = 0.14;
+      /* Keep the original perimeter-gradient style, but stretch the sweep so
+         it reaches the right edge exactly when the full R-to-L fill begins. */
+      var sweepPortion = 0.322;
       if (t < sweepPortion) {
         var sweepT = t / sweepPortion;
         this.values.sweep = easeOutCubic(sweepT);
-        this.values.spread = lerp(0, 0.12, easeOutCubic(sweepT));
+        this.values.spread = 0;
         this.values.intensity = easeListenIntensity(sweepT * 0.78);
         this.values.fill = 0;
       } else {
-        var fillT = (t - sweepPortion) / (1 - sweepPortion);
         this.values.sweep = 1;
-        this.values.spread = lerp(0.12, 0.54, easeOutCubic(fillT));
+        this.values.spread = 0;
         this.values.intensity = lerp(
           this.phaseFrom.intensity,
           this.phaseTo.intensity,
-          easeListenIntensity(0.62 + fillT * 0.38)
+          easeListenIntensity(0.62 + ((t - sweepPortion) / (1 - sweepPortion)) * 0.38)
         );
         this.values.fill = 0;
       }
       this._maybeAdvancePhase(t);
-      return;
-    }
-    if (this.phase === 'generating') {
-      var gt = this.phaseDuration > 0
-        ? clamp((now - this.phaseStart) / this.phaseDuration, 0, 1)
-        : 1;
-      this.values.sweep = 1;
-      this.values.spread = lerp(
-        this.phaseFrom.spread,
-        this.phaseTo.spread,
-        easeOutCubic(gt)
-      );
-      this.values.intensity = lerp(this.phaseFrom.intensity, this.phaseTo.intensity, easeOutCubic(gt));
-      this.values.fill = 0;
-      this._maybeAdvancePhase(gt);
       return;
     }
     AgentFillGL.prototype._updateValues.call(this, now);
@@ -1205,8 +1192,8 @@
       this.values.sweep = 0;
       this.smoothAudio = 0;
     } else if (phaseName === 'generating') {
-      /* Continue from the entrance spread instead of snapping back to empty. */
-      this.values.spread = Math.max(this.values.spread || 0, 0.18);
+      /* Gauge fill — sweep done, spread grows R→L from empty. */
+      this.values.spread = 0;
       this.values.sweep = 1;
       this.values.intensity = 1.0;
       this.values.fill = 0;
@@ -1314,7 +1301,7 @@
     var self = this;
     if (typeof ResizeObserver !== 'undefined') {
       this.resizeObserver = new ResizeObserver(function () {
-        self._resize(true);
+        self._resize(false);
       });
       this.resizeObserver.observe(this.shellEl);
     }
