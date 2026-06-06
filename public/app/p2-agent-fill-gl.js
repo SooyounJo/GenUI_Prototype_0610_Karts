@@ -1114,11 +1114,11 @@
   Test3MusicFillGL.prototype.constructor = Test3MusicFillGL;
 
   Test3MusicFillGL.prototype._getOrigin = function () {
-    /* Listening: left orb — perimeter sweep starts at sparkle disc. */
-    if (this.phase === 'listening') {
+    /* Entrance phases share the left disc origin so the sweep never jumps. */
+    if (this.phase === 'listening' || this.phase === 'generating') {
       return [0.11, 0.5];
     }
-    /* Generating / fadeOut: right edge — gauge fills right → left. */
+    /* Fade out retires toward the right edge after the card has resolved. */
     return [0.90, 0.5];
   };
 
@@ -1161,20 +1161,36 @@
       if (t < sweepPortion) {
         var sweepT = t / sweepPortion;
         this.values.sweep = easeOutCubic(sweepT);
-        this.values.spread = 0;
+        this.values.spread = lerp(0, 0.12, easeOutCubic(sweepT));
         this.values.intensity = easeListenIntensity(sweepT * 0.78);
         this.values.fill = 0;
       } else {
+        var fillT = (t - sweepPortion) / (1 - sweepPortion);
         this.values.sweep = 1;
-        this.values.spread = 0;
+        this.values.spread = lerp(0.12, 0.54, easeOutCubic(fillT));
         this.values.intensity = lerp(
           this.phaseFrom.intensity,
           this.phaseTo.intensity,
-          easeListenIntensity(0.62 + ((t - sweepPortion) / (1 - sweepPortion)) * 0.38)
+          easeListenIntensity(0.62 + fillT * 0.38)
         );
         this.values.fill = 0;
       }
       this._maybeAdvancePhase(t);
+      return;
+    }
+    if (this.phase === 'generating') {
+      var gt = this.phaseDuration > 0
+        ? clamp((now - this.phaseStart) / this.phaseDuration, 0, 1)
+        : 1;
+      this.values.sweep = 1;
+      this.values.spread = lerp(
+        this.phaseFrom.spread,
+        this.phaseTo.spread,
+        easeOutCubic(gt)
+      );
+      this.values.intensity = lerp(this.phaseFrom.intensity, this.phaseTo.intensity, easeOutCubic(gt));
+      this.values.fill = 0;
+      this._maybeAdvancePhase(gt);
       return;
     }
     AgentFillGL.prototype._updateValues.call(this, now);
@@ -1189,8 +1205,8 @@
       this.values.sweep = 0;
       this.smoothAudio = 0;
     } else if (phaseName === 'generating') {
-      /* Gauge fill — sweep done, spread grows R→L from empty. */
-      this.values.spread = 0;
+      /* Continue from the entrance spread instead of snapping back to empty. */
+      this.values.spread = Math.max(this.values.spread || 0, 0.18);
       this.values.sweep = 1;
       this.values.intensity = 1.0;
       this.values.fill = 0;
