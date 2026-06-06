@@ -309,12 +309,17 @@
     '  headDist = min(headDist, 1.0 - headDist);',
     '  float headGlow = exp(-headDist * 16.0) * smoothstep(0.02, 0.10, head);',
     '  float headWide = exp(-headDist * 7.2) * 0.52 * smoothstep(0.02, 0.10, head);',
+    '  float test3Seed = step(3.5, u_variant)',
+    '    * smoothstep(0.0, 0.055, sweep)',
+    '    * (1.0 - smoothstep(0.18, 0.32, sweep));',
+    '  float leftSeed = (exp(-clamp(uv.x, 0.0, 1.0) * 22.0)',
+    '    + exp(-clamp(uv.x, 0.0, 1.0) * 7.0) * 0.28) * test3Seed;',
     '  float wave = sin(time * 1.28 + posFromStart * 6.28318530718',
     '    + fbm(uv * 3.1 + time * 0.08) * 4.4) * 0.5 + 0.5;',
     '  float ripple = sin(time * 1.62 + depthIn * 7.4 - posFromStart * 11.0',
     '    + fbm(uv * 2.5 + time * 0.09) * 3.2) * 0.5 + 0.5;',
     '  float waver = 0.82 + wave * 0.12 + ripple * 0.08;',
-    '  float lit = max(max(trail * 0.92, headGlow * 1.34 + headWide), passed * trail * 0.58);',
+    '  float lit = max(max(max(trail * 0.92, headGlow * 1.34 + headWide), passed * trail * 0.58), leftSeed);',
     '  lit *= waver;',
     '  float handoff = 1.0 - smoothstep(0.90, 1.0, sweep) * smoothstep(0.0, 0.18, u_spread);',
     '  lit *= mix(1.0, max(handoff, 0.42), smoothstep(0.92, 1.0, sweep));',
@@ -1178,6 +1183,17 @@
         this.values.fill = 0;
       }
       this._maybeAdvancePhase(t);
+      return;
+    }
+    if (this.phase === 'generating') {
+      var gt = this.phaseDuration > 0
+        ? clamp((now - this.phaseStart) / this.phaseDuration, 0, 1)
+        : 1;
+      this.values.sweep = 1;
+      this.values.spread = lerp(this.phaseFrom.spread, this.phaseTo.spread, gt);
+      this.values.intensity = lerp(this.phaseFrom.intensity, this.phaseTo.intensity, gt);
+      this.values.fill = 0;
+      this._maybeAdvancePhase(gt);
       return;
     }
     AgentFillGL.prototype._updateValues.call(this, now);
