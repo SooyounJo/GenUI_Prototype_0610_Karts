@@ -225,6 +225,38 @@
     '  return col * 1.08;',
     '}',
     '',
+    'vec3 meshTest3OrangeGradient(vec2 uv, float time, float audio) {',
+    '  float mt = time * (1.38 + audio * 0.10);',
+    '  float warpAmt = 0.032 + audio * 0.012;',
+    '  vec2 warp = vec2(',
+    '    fbm(uv * 2.1 + mt * 0.058) - 0.5,',
+    '    fbm(uv * 2.1 + vec2(13.7, 8.4) + mt * 0.050) - 0.5',
+    '  ) * warpAmt;',
+    '  vec2 u = uv + warp;',
+    '  vec3 deepOrange = vec3(0.968, 0.498, 0.157);',
+    '  vec3 orange = vec3(1.0, 0.557, 0.220);',
+    '  vec3 lightOrange = vec3(1.0, 0.659, 0.282);',
+    '  vec3 peach = vec3(1.0, 0.780, 0.420);',
+    '  vec3 cream = vec3(1.0, 0.910, 0.620);',
+    '  vec3 warmWhite = vec3(1.0, 0.965, 0.820);',
+    '  vec2 a1 = u_origin + vec2(sin(mt * 0.40) * 0.026, cos(mt * 0.34) * 0.022);',
+    '  vec2 a2 = u_origin + vec2(-0.12, 0.10) + vec2(cos(mt * 0.30) * 0.024, sin(mt * 0.27) * 0.020);',
+    '  vec2 a3 = u_origin + vec2(-0.24, 0.18) + vec2(sin(mt * 0.26) * 0.026, cos(mt * 0.32) * 0.022);',
+    '  vec2 a4 = u_origin + vec2(-0.36, 0.28) + vec2(cos(mt * 0.28) * 0.024, sin(mt * 0.30) * 0.020);',
+    '  vec2 a5 = u_origin + vec2(-0.46, 0.36) + vec2(sin(mt * 0.24) * 0.022, cos(mt * 0.26) * 0.018);',
+    '  vec2 a6 = u_origin + vec2(-0.54, 0.44) + vec2(cos(mt * 0.22) * 0.020, sin(mt * 0.24) * 0.018);',
+    '  float falloff = 1.28;',
+    '  float w1 = 1.0 / (pow(length(u - a1), falloff) + 0.082);',
+    '  float w2 = 1.0 / (pow(length(u - a2), falloff) + 0.086);',
+    '  float w3 = 1.0 / (pow(length(u - a3), falloff) + 0.090);',
+    '  float w4 = 1.0 / (pow(length(u - a4), falloff) + 0.094);',
+    '  float w5 = 1.0 / (pow(length(u - a5), falloff) + 0.098);',
+    '  float w6 = 1.0 / (pow(length(u - a6), falloff) + 0.102);',
+    '  float wSum = w1 + w2 + w3 + w4 + w5 + w6;',
+    '  vec3 col = (deepOrange * w1 + orange * w2 + lightOrange * w3 + peach * w4 + cream * w5 + warmWhite * w6) / wSum;',
+    '  return col * 1.12;',
+    '}',
+    '',
     'float edgeRingHandoff(vec2 uv, vec2 p, float sdf, float aspect, float tightness, float time) {',
     '  float maxInward = mix(0.64, 0.28, clamp(tightness, 0.0, 1.0));',
     '  float inward = clamp(-sdf, 0.0, maxInward);',
@@ -317,11 +349,13 @@
     '  float reveal = organicReveal(uv, rel, sdf, u_spread, u_time, u_audio)',
     '    * smoothstep(0.82, 0.98, u_sweep);',
     '',
-    '  vec3 mesh = u_variant >= 2.5',
-    '    ? meshTest1PillGradient(uv, u_time, u_audio)',
-    '    : u_variant >= 1.5',
-    '      ? meshTest1GleamGradient(uv, u_time, u_audio)',
-    '      : meshWarmGradient(uv, u_time, u_audio);',
+    '  vec3 mesh = u_variant >= 3.5',
+    '    ? meshTest3OrangeGradient(uv, u_time, u_audio)',
+    '    : u_variant >= 2.5',
+    '      ? meshTest1PillGradient(uv, u_time, u_audio)',
+    '      : u_variant >= 1.5',
+    '        ? meshTest1GleamGradient(uv, u_time, u_audio)',
+    '        : meshWarmGradient(uv, u_time, u_audio);',
     '  float sweepMask = edgePerimeterSweep(uv, p, sdf, u_aspect, u_sweep, u_time);',
     '  float tightness = smoothstep(0.38, 0.98, handoffT);',
     '  float spreadShimmer = 1.0 - smoothstep(0.04, 0.78, u_spread);',
@@ -346,7 +380,9 @@
     '',
     '  float frontier = smoothstep(0.04, 0.42, combinedMask)',
     '    * (1.0 - smoothstep(0.42, 0.96, combinedMask));',
-    '  vec3 liftedColor = color + color * frontier * 0.07;',
+    '  float test3GaugeLift = step(3.5, u_variant) * frontier * 0.14;',
+    '  vec3 test3WarmLift = step(3.5, u_variant) * vec3(0.08, 0.03, 0.0) * frontier;',
+    '  vec3 liftedColor = color + color * frontier * 0.07 + vec3(test3GaugeLift) + test3WarmLift;',
     '  float alpha = combinedMask * shapeAlpha;',
     '  if (alpha < 0.004) discard;',
     '  gl_FragColor = vec4(liftedColor * alpha, alpha);',
@@ -776,7 +812,7 @@
       : 1;
     var eased;
     if (this.phase === 'listening') {
-      var sweepPortion = isTest2Scope() ? 0.14 : LISTEN_SWEEP_PORTION;
+      var sweepPortion = (isTest2Scope() || isTest3Scope()) ? 0.14 : LISTEN_SWEEP_PORTION;
       if (t < sweepPortion) {
         var sweepT = t / sweepPortion;
         this.values.sweep = easeOutCubic(sweepT);
@@ -802,7 +838,7 @@
       return;
     }
     if (this.phase === 'generating') {
-      eased = isTest2Scope()
+      eased = (isTest2Scope() || isTest3Scope())
         ? easeListeningSpread(t)
         : easeContinueSpread(t, this.phaseFrom.spread);
     } else if (this.phase === 'hollowReveal') {
@@ -1065,29 +1101,136 @@
     }
   };
 
+  var TEST3_PHASE_CHAIN = {
+    hollowReveal: 'settling',
+    settling: 'fadeOut'
+  };
+
   function Test3MusicFillGL() {
     AgentFillGL.call(this);
-    this._meshVariant = 1;
+    this._meshVariant = 4;
   }
   Test3MusicFillGL.prototype = Object.create(AgentFillGL.prototype);
   Test3MusicFillGL.prototype.constructor = Test3MusicFillGL;
 
   Test3MusicFillGL.prototype._getOrigin = function () {
-    /* Left orb anchor — fill sweeps orange → cream left-to-right (image 1). */
-    return [0.11, 0.5];
+    /* Listening: left orb — perimeter sweep starts at sparkle disc. */
+    if (this.phase === 'listening') {
+      return [0.11, 0.5];
+    }
+    /* Generating / fadeOut: right edge — gauge fills right → left. */
+    return [0.90, 0.5];
+  };
+
+  Test3MusicFillGL.prototype._setPhaseTargets = function (phaseName) {
+    var next = this._getPhaseConfig(phaseName);
+    this.phase = phaseName;
+    this.phaseStart = performance.now();
+    this._fadeTailDone = false;
+    this.phaseFrom = {
+      spread: this.values.spread,
+      intensity: this.values.intensity,
+      fill: this.values.fill
+    };
+    this.phaseTo = {
+      spread: next.spread,
+      intensity: next.intensity,
+      fill: next.fill
+    };
+    this.phaseDuration = next.duration;
+    if (this.fillEl) {
+      if (phaseName !== 'idle') {
+        this.fillEl.classList.add('p2-agent-fill--gl-active');
+        this.fillEl.classList.remove('p2-agent-fill--gl-fading');
+      } else {
+        this.fillEl.classList.remove('p2-agent-fill--gl-active');
+        this.fillEl.classList.remove('p2-agent-fill--gl-fading');
+      }
+      if (phaseName === 'fadeOut') {
+        this.fillEl.classList.add('p2-agent-fill--gl-fading');
+      }
+    }
+  };
+
+  Test3MusicFillGL.prototype._updateValues = function (now) {
+    if (this.phase === 'listening') {
+      var t = this.phaseDuration > 0
+        ? clamp((now - this.phaseStart) / this.phaseDuration, 0, 1)
+        : 1;
+      var sweepPortion = 0.14;
+      if (t < sweepPortion) {
+        var sweepT = t / sweepPortion;
+        this.values.sweep = easeOutCubic(sweepT);
+        this.values.spread = 0;
+        this.values.intensity = easeListenIntensity(sweepT * 0.78);
+        this.values.fill = 0;
+      } else {
+        this.values.sweep = 1;
+        this.values.spread = 0;
+        this.values.intensity = lerp(
+          this.phaseFrom.intensity,
+          this.phaseTo.intensity,
+          easeListenIntensity(0.62 + ((t - sweepPortion) / (1 - sweepPortion)) * 0.38)
+        );
+        this.values.fill = 0;
+      }
+      this._maybeAdvancePhase(t);
+      return;
+    }
+    AgentFillGL.prototype._updateValues.call(this, now);
+  };
+
+  Test3MusicFillGL.prototype.setPhase = function (phaseName) {
+    if (!this.ready || prefersReducedMotion()) return;
+    if (phaseName === 'listening') {
+      this.values.spread = 0;
+      this.values.intensity = 0;
+      this.values.fill = 0;
+      this.values.sweep = 0;
+      this.smoothAudio = 0;
+    } else if (phaseName === 'generating') {
+      /* Gauge fill — sweep done, spread grows R→L from empty. */
+      this.values.spread = 0;
+      this.values.sweep = 1;
+      this.values.intensity = 1.0;
+      this.values.fill = 0;
+    }
+    this._setPhaseTargets(phaseName || 'idle');
+    if (phaseName !== 'idle') this._startLoop();
+    else this._stopLoop(true);
+  };
+
+  Test3MusicFillGL.prototype._getPhaseConfig = function (phaseName) {
+    if (phaseName === 'listening') {
+      /* Match test2 sweep timing: ~14% × 7200ms ≈ 1s perimeter sweep. */
+      return { spread: 0.0, intensity: 1.0, fill: 0.0, duration: 7200 };
+    }
+    if (phaseName === 'generating') {
+      return { spread: 1.42, intensity: 1.0, fill: 0.0, duration: 4040 };
+    }
+    if (phaseName === 'fadeOut') {
+      return { spread: 1.42, intensity: 0.0, fill: 0.0, duration: 1280 };
+    }
+    return PHASES[phaseName] || PHASES.idle;
+  };
+
+  Test3MusicFillGL.prototype._resize = function (force) {
+    AgentFillGL.prototype._resize.call(this, force);
+    /* Wide music capsule — not the compact agent-input pill. */
+    this.layout.compact = 0;
+    this.layout.virtAspect = this.layout.aspect || INPUT_VIRT_ASPECT;
   };
 
   Test3MusicFillGL.prototype._maybeAdvancePhase = function (t) {
     if (!isTest3Scope() || t < 0.999) return;
     if (this._phaseChainLock) return;
-    var chain = { hollowReveal: 'settling', settling: 'fadeOut' };
-    var next = chain[this.phase];
+    var next = TEST3_PHASE_CHAIN[this.phase];
     if (!next) return;
     this._phaseChainLock = true;
     var self = this;
     requestAnimationFrame(function () {
       self._phaseChainLock = false;
-      if (self.phase && chain[self.phase] === next) {
+      if (self.phase && TEST3_PHASE_CHAIN[self.phase] === next) {
         self._setPhaseTargets(next);
       }
     });
@@ -1139,7 +1282,10 @@
       spread: gl.getUniformLocation(program, 'u_spread'),
       intensity: gl.getUniformLocation(program, 'u_intensity'),
       fill: gl.getUniformLocation(program, 'u_fill'),
+      sweep: gl.getUniformLocation(program, 'u_sweep'),
       audio: gl.getUniformLocation(program, 'u_audio'),
+      compact: gl.getUniformLocation(program, 'u_compact'),
+      virtAspect: gl.getUniformLocation(program, 'u_virtAspect'),
       variant: gl.getUniformLocation(program, 'u_variant')
     };
 

@@ -10336,8 +10336,8 @@ function _mountTest3MusicAfterWeatherPrep(runId) {
           if (typeof _restartTest3MusicEntranceAnimations === 'function') {
             _restartTest3MusicEntranceAnimations(test3MusicEl);
           }
-          if (window.Test3MusicFillGL && typeof window.Test3MusicFillGL.ensureBound === 'function') {
-            window.Test3MusicFillGL.ensureBound();
+          if (typeof _beginTest3MusicBorderSweep === 'function') {
+            _beginTest3MusicBorderSweep(test3MusicEl);
           }
           if (typeof _syncTest3MusicDiscLayersAfterRender === 'function') {
             _syncTest3MusicDiscLayersAfterRender();
@@ -10394,13 +10394,32 @@ function _mountTest3MusicAfterWeatherPrep(runId) {
     });
   } catch (_) {}
 }
+function _beginTest3MusicBorderSweep(music) {
+  music = music || document.querySelector('#test3-music');
+  if (!music) return;
+  var fill = music.querySelector('.test3-music-fill');
+  if (!fill) return;
+  fill.classList.remove('test3-music-fill--fading');
+  fill.classList.add('test3-music-fill--border');
+  if (window.Test3MusicFillGL && typeof window.Test3MusicFillGL.ensureBound === 'function') {
+    window.Test3MusicFillGL.ensureBound();
+  }
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      if (!music.isConnected) return;
+      if (window.Test3MusicFillGL) {
+        window.Test3MusicFillGL.setPhase('listening');
+      }
+    });
+  });
+}
 function _beginTest3MusicFill(music) {
   music = music || document.querySelector('#test3-music');
   if (!music) return;
   var shell = music.querySelector('.dot-music1');
   var fill = music.querySelector('.test3-music-fill');
   if (fill) {
-    fill.classList.remove('test3-music-fill--fading', 'p2-agent-fill--gl-active');
+    fill.classList.remove('test3-music-fill--fading', 'test3-music-fill--border');
   }
   if (window.Test3MusicFillGL) {
     window.Test3MusicFillGL.ensureBound();
@@ -10430,7 +10449,6 @@ function _armTest3MusicWhiteShell(music) {
   if (!music) return;
   var shell = music.querySelector('.dot-music1');
   if (!shell) return;
-  music.setAttribute('data-test3-music-shell-white', '0');
   shell.style.removeProperty('background-color');
   shell.style.removeProperty('transition');
   void shell.offsetWidth;
@@ -10459,7 +10477,7 @@ function _beginTest3MusicResolve(music) {
     _armTest3MusicWhiteShell(music);
   }
   if (window.Test3MusicFillGL) {
-    window.Test3MusicFillGL.setPhase('idle');
+    window.Test3MusicFillGL.setPhase('fadeOut');
   }
   if (window.__mlpTest3MusicIvoryFadeTimer) {
     clearTimeout(window.__mlpTest3MusicIvoryFadeTimer);
@@ -10728,7 +10746,13 @@ function _restartTest3MusicEntranceAnimations(music) {
   }
   var fill = music.querySelector('.test3-music-fill');
   if (fill) {
-    fill.classList.remove('test3-music-fill--active', 'test3-music-fill--fading', 'p2-agent-fill--gl-active', 'p2-agent-fill--gl-fading');
+    fill.classList.remove(
+      'test3-music-fill--active',
+      'test3-music-fill--border',
+      'test3-music-fill--fading',
+      'p2-agent-fill--gl-active',
+      'p2-agent-fill--gl-fading'
+    );
   }
   var shell = music.querySelector('.dot-music1');
   if (shell) {
