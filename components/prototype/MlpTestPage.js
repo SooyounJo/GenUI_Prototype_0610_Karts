@@ -332,6 +332,9 @@ export default function MlpTestPage({
     setIsEntering(false);
     setBgVideoActive(false);
     setBgVideoPhase("fade-in");
+    if (testId === "test1" && typeof window !== "undefined") {
+      delete window.__mlpTest1PhoneFrameReady;
+    }
 
     return function () {
       bgTimersRef.current.forEach(clearTimeout);
@@ -340,8 +343,28 @@ export default function MlpTestPage({
         bgVideoSyncCleanupRef.current();
         bgVideoSyncCleanupRef.current = null;
       }
+      if (testId === "test1" && typeof window !== "undefined") {
+        delete window.__mlpTest1PhoneFrameReady;
+      }
     };
   }, [testId]);
+
+  useEffect(function () {
+    if (typeof window === "undefined" || testId !== "test1") return undefined;
+    if (!isEntering) return undefined;
+    delete window.__mlpTest1PhoneFrameReady;
+    var timer = setTimeout(function () {
+      window.__mlpTest1PhoneFrameReady = true;
+      var canvas = document.getElementById("canvas");
+      if (canvas && canvas.getAttribute("data-test-scope") === "test1" &&
+          typeof window.__armTest1IntroDelay === "function") {
+        window.__armTest1IntroDelay(canvas);
+      }
+    }, MOBILE_ENTRY_MS);
+    return function () {
+      clearTimeout(timer);
+    };
+  }, [isEntering, testId]);
 
   useEffect(function () {
     if (bgVideoPhase !== "fade-in") return;

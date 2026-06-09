@@ -12495,7 +12495,7 @@ function installTest2P2TransitionBridge(canvas) {
 
 window._teardownTest2P2TransitionBridge = _teardownTest2P2TransitionBridge;
 
-var TEST1_INTRO_DELAY_MS = 3000;
+var TEST1_INTRO_DELAY_MS = 2000;
 var TEST1_LOTTE_INTRO_MS = 720;
 var TEST1_GREEN_AFTER_LOTTE_MS = 1800;
 var TEST1_STACK_AFTER_GREEN_MS = 1200;
@@ -13755,12 +13755,33 @@ function _armTest1IntroDelay(canvas) {
   if (!canvas || canvas.getAttribute('data-test-scope') !== 'test1') return;
   if (window.__mlpTestConfig && window.__mlpTestConfig.test1RevealAll) return;
   if (window.__mlpTest1IntroTimer) return;
+  if (!window.__mlpTest1PhoneFrameReady) {
+    window.__mlpTest1IntroTimer = setTimeout(function () {
+      window.__mlpTest1IntroTimer = null;
+      try {
+        var c0 = document.getElementById('canvas');
+        if (c0 && c0.getAttribute('data-test-scope') === 'test1') {
+          _armTest1IntroDelay(c0);
+        }
+      } catch (_) {}
+    }, 80);
+    return;
+  }
+  if (canvas.getAttribute('data-test1-intro-gate-done')) return;
   window.__mlpTest1IntroTimer = setTimeout(function () {
     window.__mlpTest1IntroTimer = null;
     try {
       var c = document.getElementById('canvas');
       if (!c || c.getAttribute('data-test-scope') !== 'test1') return;
       if (window.__mlpTestConfig && window.__mlpTestConfig.test1RevealAll) return;
+      c.setAttribute('data-test1-intro-gate-done', '1');
+      c.removeAttribute('data-test1-green-run');
+      c.removeAttribute('data-test1-stack-run');
+      c.removeAttribute('data-test1-stack-animate');
+      if (window.__mlpTestConfig) {
+        window.__mlpTestConfig.test1GreenRun = false;
+        window.__mlpTestConfig.test1StackRun = false;
+      }
       c.setAttribute('data-test1-intro-run', '1');
       _armTest1GreenAfterLotte(c);
     } catch (_) {}
@@ -13915,12 +13936,12 @@ window.generateSurfaceScenario = function generateSurfaceScenario(surfaceType) {
         canvas.removeAttribute('data-test1-intro-run');
         canvas.removeAttribute('data-test1-pill-prep');
         canvas.removeAttribute('data-test1-pill-run');
-        if (window.__mlpTestConfig && window.__mlpTestConfig.test1GreenRun) {
+        if (window.__mlpTestConfig && window.__mlpTestConfig.test1GreenRun && canvas.getAttribute('data-test1-intro-gate-done')) {
           canvas.setAttribute('data-test1-green-run', '1');
         } else {
           canvas.removeAttribute('data-test1-green-run');
         }
-        if (window.__mlpTestConfig && window.__mlpTestConfig.test1StackRun) {
+        if (window.__mlpTestConfig && window.__mlpTestConfig.test1StackRun && canvas.getAttribute('data-test1-intro-gate-done')) {
           canvas.setAttribute('data-test1-stack-run', '1');
         } else {
           canvas.removeAttribute('data-test1-stack-run');

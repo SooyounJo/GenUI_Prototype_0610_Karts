@@ -5,6 +5,8 @@ export default function Test1Page() {
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
 
+    delete window.__mlpTest1PhoneFrameReady;
+
     if (window.__mlpTestConfig) {
       window.__mlpTestConfig.test1RevealAll = false;
       window.__mlpTestConfig.test1GreenRun = false;
@@ -29,6 +31,7 @@ export default function Test1Page() {
         canvas.removeAttribute("data-test1-intro-run");
         canvas.removeAttribute("data-test1-pill-prep");
         canvas.removeAttribute("data-test1-pill-run");
+        canvas.removeAttribute("data-test1-intro-gate-done");
         canvas.removeAttribute("data-test1-green-run");
         canvas.removeAttribute("data-test1-stack-run");
         canvas.removeAttribute("data-test1-stack-animate");
