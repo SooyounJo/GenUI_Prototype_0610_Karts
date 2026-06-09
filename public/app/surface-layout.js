@@ -610,27 +610,272 @@ var TEST3_MUSIC_GLOW_FADE_MS = 1000;
 var TEST3_MUSIC_FILL_FADE_MS = 1400;
 var TEST3_MUSIC_ENTRANCE_END_MS = TEST3_MUSIC_MOTION_MS;
 
-/** test1 status bar image layer. */
-function renderTest1HealthStatusBar() {
+function _formatTest1StatusTime(d) {
+  var h = d.getHours();
+  var m = d.getMinutes();
+  return h + ':' + (m < 10 ? '0' + m : String(m));
+}
+
+function _formatTest1LockClockParts(d) {
+  return {
+    HH: String(d.getHours()).padStart(2, '0'),
+    MM: String(d.getMinutes()).padStart(2, '0')
+  };
+}
+
+function _getMlpDayNightCondition(d) {
+  var hour = (d || new Date()).getHours();
+  return (hour >= 6 && hour < 18) ? 'sunny' : 'moon';
+}
+
+function _renderMlpWeatherDateMaskIcon(condition) {
+  var cond = condition === 'sunny' ? 'sunny' : 'moon';
+  return '<div class="mlp-weather-date-icon mlp-weather-date-icon--' + cond + '" data-weather-cond="' + cond + '" aria-hidden="true"></div>';
+}
+
+function _syncMlpWeatherDateIcon(weatherRow) {
+  if (!weatherRow) return;
+  var cond = _getMlpDayNightCondition(new Date());
+  var iconEl = weatherRow.querySelector('.mlp-weather-date-icon');
+  if (!iconEl) return;
+  if (iconEl.getAttribute('data-weather-cond') === cond) return;
+  iconEl.className = 'mlp-weather-date-icon mlp-weather-date-icon--' + cond;
+  iconEl.setAttribute('data-weather-cond', cond);
+}
+
+function _getTest1DayNightCondition(d) {
+  return _getMlpDayNightCondition(d);
+}
+
+function _getTest1LiveWeatherTemp() {
+  if (window.__liveWeather && window.__liveWeather.temp != null) {
+    return window.__liveWeather.temp;
+  }
+  return 24;
+}
+
+function _syncTest1LiveWeather() {
+  if (!window.__mlpTestConfig || window.__mlpTestConfig.id !== 'test1') return;
+  var canvas = document.getElementById('canvas');
+  if (!canvas || canvas.getAttribute('data-test-scope') !== 'test1') return;
+  var stack = document.getElementById('test1-lock-stack');
+  if (!stack) return;
+  var weatherRow = stack.querySelector('.test1-lock-stack__clock > div:first-child');
+  if (!weatherRow) return;
+
+  _syncMlpWeatherDateIcon(weatherRow);
+
+  var w = window.__liveWeather;
+  if (!w || w.temp == null) return;
+  var tempEl = weatherRow.querySelector('[data-test1-live-temp]');
+  if (!tempEl) {
+    var spans = weatherRow.querySelectorAll('span');
+    if (!spans.length) return;
+    tempEl = spans[spans.length - 1];
+    tempEl.setAttribute('data-test1-live-temp', '1');
+  }
+  tempEl.textContent = w.temp + '\u00b0';
+}
+
+function _syncTest1LiveTime() {
+  if (!window.__mlpTestConfig || window.__mlpTestConfig.id !== 'test1') return;
+  var canvas = document.getElementById('canvas');
+  if (!canvas || canvas.getAttribute('data-test-scope') !== 'test1') return;
+  var now = new Date();
+  var parts = _formatTest1LockClockParts(now);
+  var stack = document.getElementById('test1-lock-stack');
+  if (stack) {
+    var clockCol = stack.querySelector('.test1-lock-stack__clock > div:last-child');
+    if (clockCol && clockCol.children.length >= 2) {
+      clockCol.children[0].textContent = parts.HH;
+      clockCol.children[1].textContent = parts.MM;
+    }
+  }
+  var timeEl = canvas.querySelector('.test1-status-bar__time[data-test1-live-time]');
+  if (timeEl) timeEl.textContent = _formatTest1StatusTime(now);
+  _syncTest1LiveWeather();
+}
+
+function _ensureTest1LiveWeatherPoll() {
+  if (window.__liveWeather) {
+    _syncTest1LiveWeather();
+    return;
+  }
+  if (window.__mlpTest1LiveWeatherPollTimer) return;
+  var tries = 0;
+  window.__mlpTest1LiveWeatherPollTimer = setInterval(function () {
+    tries += 1;
+    _syncTest1LiveWeather();
+    if (window.__liveWeather || tries >= 40) {
+      clearInterval(window.__mlpTest1LiveWeatherPollTimer);
+      window.__mlpTest1LiveWeatherPollTimer = null;
+    }
+  }, 500);
+}
+
+function _ensureTest1LiveTimeTick() {
+  _syncTest1LiveTime();
+  _ensureTest1LiveWeatherPoll();
+  if (window.__mlpTest1LiveTimeTimer) return;
+  window.__mlpTest1LiveTimeTimer = setInterval(_syncTest1LiveTime, 30000);
+}
+
+/** test1 status bar — live time + system icons (CSS in theme-page.css). */
+function renderTest1HealthStatusBar(props) {
+  var p = props || {};
+  var asset = '/assets/test1/status-bar/';
+  var time = p.time || _formatTest1StatusTime(new Date());
   var fill = 'width:100%;height:100%;box-sizing:border-box;';
   return '<div class="test1-status-bar" style="' + fill + '">' +
-           '<img class="test1-status-bar__image" src="/status.png" alt="" draggable="false" />' +
+           '<div class="test1-status-bar__left">' +
+             '<span class="test1-status-bar__time" data-test1-live-time="1">' + time + '</span>' +
+           '</div>' +
+           '<div class="test1-status-bar__right">' +
+             '<div class="test1-status-bar__icon test1-status-bar__icon--wifi" aria-hidden="true">' +
+               '<img src="' + asset + 'wifi.svg" alt="" />' +
+             '</div>' +
+             '<div class="test1-status-bar__icon test1-status-bar__icon--cell" aria-hidden="true">' +
+               '<img src="' + asset + 'cellular.svg" alt="" />' +
+             '</div>' +
+             '<div class="test1-status-bar__battery" aria-hidden="true">' +
+               '<img class="test1-status-bar__battery-left" src="' + asset + 'battery-left.svg" alt="" />' +
+               '<img class="test1-status-bar__battery-right" src="' + asset + 'battery-right.svg" alt="" />' +
+             '</div>' +
+           '</div>' +
          '</div>';
 }
 
-/** test2 status bar image layer. */
-function renderTest2HealthStatusBar() {
+/** test2 status bar — live time + system icons (CSS in theme-page.css). */
+function renderTest2HealthStatusBar(props) {
+  var p = props || {};
+  var asset = '/assets/test2/status-bar/';
+  var time = p.time || _formatTest1StatusTime(new Date());
   var fill = 'width:100%;height:100%;box-sizing:border-box;';
   return '<div class="test2-status-bar" style="' + fill + '">' +
-           '<img class="test2-status-bar__image" src="/status.png" alt="" draggable="false" />' +
+           '<div class="test2-status-bar__left">' +
+             '<span class="test2-status-bar__time" data-test2-live-time="1">' + time + '</span>' +
+           '</div>' +
+           '<div class="test2-status-bar__right">' +
+             '<div class="test2-status-bar__icon test2-status-bar__icon--wifi" aria-hidden="true">' +
+               '<img src="' + asset + 'wifi.svg" alt="" />' +
+             '</div>' +
+             '<div class="test2-status-bar__icon test2-status-bar__icon--cell" aria-hidden="true">' +
+               '<img src="' + asset + 'cellular.svg" alt="" />' +
+             '</div>' +
+             '<div class="test2-status-bar__battery" aria-hidden="true">' +
+               '<img class="test2-status-bar__battery-left" src="' + asset + 'battery-left.svg" alt="" />' +
+               '<img class="test2-status-bar__battery-right" src="' + asset + 'battery-right.svg" alt="" />' +
+             '</div>' +
+           '</div>' +
          '</div>';
 }
 
-/** test3 status bar image layer. */
-function renderTest3HealthStatusBar() {
+function _getTest2LiveWeatherTemp() {
+  if (window.__liveWeather && window.__liveWeather.temp != null) {
+    return window.__liveWeather.temp;
+  }
+  return 24;
+}
+
+function _syncTest2LiveWeather() {
+  if (!window.__mlpTestConfig || window.__mlpTestConfig.id !== 'test2') return;
+  var canvas = document.getElementById('canvas');
+  if (!canvas || canvas.getAttribute('data-test-scope') !== 'test2') return;
+  var weatherEl = document.getElementById('weatherDate');
+  if (!weatherEl) return;
+  _syncMlpWeatherDateIcon(weatherEl);
+  var w = window.__liveWeather;
+  if (!w || w.temp == null) return;
+  var tempEl = weatherEl.querySelector('[data-test2-live-temp]');
+  if (!tempEl) {
+    var spans = weatherEl.querySelectorAll('span');
+    if (!spans.length) return;
+    tempEl = spans[spans.length - 1];
+    tempEl.setAttribute('data-test2-live-temp', '1');
+  }
+  tempEl.textContent = w.temp + '\u00b0';
+}
+
+function _syncTest2LiveTime() {
+  if (!window.__mlpTestConfig || window.__mlpTestConfig.id !== 'test2') return;
+  var canvas = document.getElementById('canvas');
+  if (!canvas || canvas.getAttribute('data-test-scope') !== 'test2') return;
+  var now = new Date();
+  var parts = _formatTest1LockClockParts(now);
+  var clockWrap = document.getElementById('clock');
+  if (clockWrap) {
+    var clockCol = clockWrap.querySelector(':scope > div');
+    if (clockCol && clockCol.children.length >= 2) {
+      clockCol.children[0].textContent = parts.HH;
+      clockCol.children[1].textContent = parts.MM;
+    }
+  }
+  var timeEl = canvas.querySelector('.test2-status-bar__time[data-test2-live-time]');
+  if (timeEl) timeEl.textContent = _formatTest1StatusTime(now);
+  _syncTest2LiveWeather();
+}
+
+function _ensureTest2LiveWeatherPoll() {
+  if (window.__liveWeather) {
+    _syncTest2LiveWeather();
+    return;
+  }
+  if (window.__mlpTest2LiveWeatherPollTimer) return;
+  var tries = 0;
+  window.__mlpTest2LiveWeatherPollTimer = setInterval(function () {
+    tries += 1;
+    _syncTest2LiveWeather();
+    if (window.__liveWeather || tries >= 40) {
+      clearInterval(window.__mlpTest2LiveWeatherPollTimer);
+      window.__mlpTest2LiveWeatherPollTimer = null;
+    }
+  }, 500);
+}
+
+function _ensureTest2LiveTimeTick() {
+  _syncTest2LiveTime();
+  _ensureTest2LiveWeatherPoll();
+  if (window.__mlpTest2LiveTimeTimer) return;
+  window.__mlpTest2LiveTimeTimer = setInterval(_syncTest2LiveTime, 30000);
+}
+
+function _syncTest3LiveTime() {
+  if (!window.__mlpTestConfig || window.__mlpTestConfig.id !== 'test3') return;
+  var canvas = document.getElementById('canvas');
+  if (!canvas || canvas.getAttribute('data-test-scope') !== 'test3') return;
+  var now = new Date();
+  var timeEl = canvas.querySelector('.test3-status-bar__time[data-test3-live-time]');
+  if (timeEl) timeEl.textContent = _formatTest1StatusTime(now);
+}
+
+function _ensureTest3LiveTimeTick() {
+  _syncTest3LiveTime();
+  if (window.__mlpTest3LiveTimeTimer) return;
+  window.__mlpTest3LiveTimeTimer = setInterval(_syncTest3LiveTime, 30000);
+}
+
+/** test3 status bar — live time + system icons (CSS in theme-page.css). */
+function renderTest3HealthStatusBar(props) {
+  var p = props || {};
+  var asset = '/assets/test3/';
+  var time = p.time || _formatTest1StatusTime(new Date());
   var fill = 'width:100%;height:100%;box-sizing:border-box;';
   return '<div class="test3-status-bar" style="' + fill + '">' +
-           '<img class="test3-status-bar__image" src="/status.png" alt="" draggable="false" />' +
+           '<div class="test3-status-bar__left">' +
+             '<span class="test3-status-bar__time" data-test3-live-time="1">' + time + '</span>' +
+           '</div>' +
+           '<div class="test3-status-bar__right">' +
+             '<div class="test3-status-bar__icon test3-status-bar__icon--wifi" aria-hidden="true">' +
+               '<img src="' + asset + 'wifi.svg" alt="" />' +
+             '</div>' +
+             '<div class="test3-status-bar__icon test3-status-bar__icon--cell" aria-hidden="true">' +
+               '<img src="' + asset + 'cellular.svg" alt="" />' +
+             '</div>' +
+             '<div class="test3-status-bar__battery" aria-hidden="true">' +
+               '<img class="test3-status-bar__battery-left" src="' + asset + 'battery-left.svg" alt="" />' +
+               '<img class="test3-status-bar__battery-right" src="' + asset + 'battery-right.svg" alt="" />' +
+             '</div>' +
+           '</div>' +
          '</div>';
 }
 
@@ -784,7 +1029,7 @@ window.composeSurfacePlan = function composeSurfacePlan(surfaceType, layout) {
         components: [
           { id: 'status-bar',    role: 'status-bar',    zone: 'topSystem' },
           { id: 'lockIndicator', role: 'lockIndicator', zone: 'topSystem' },
-          { id: 'weatherDate',   role: 'weatherDate',   zone: 'viewing', variant: { date: 'Sat, May 3', temp: '24', condition: 'moon' } },
+          { id: 'weatherDate',   role: 'weatherDate',   zone: 'viewing', variant: { date: 'Sat, May 3', temp: _getTest2LiveWeatherTemp(), condition: _getMlpDayNightCondition(new Date()) } },
           // Match the intended lockscreen scale (image2)
           { id: 'clock',         role: 'clock',         zone: 'viewing', variant: { fontSize: 90, lineHeight: 66, gap: 10 } },
           { id: 'persona2-widgets', role: 'persona2-widgets', zone: 'viewing' },
@@ -7286,7 +7531,12 @@ window.renderAtomicForRole = function renderAtomicForRole(comp, rect) {
         '<svg width="19" height="19" viewBox="0 0 24 24" fill="none">' +
           '<path d="M20 14.5A8 8 0 1 1 9.5 4c-.3 1-.5 2-.5 3a7 7 0 0 0 11 7.5z" fill="#fff"/>' +
         '</svg>';
-      var iconSvg = WEATHER_INLINE[wdCond] || moonInline;
+      var iconSvg;
+      if (window.__mlpTestConfig && (window.__mlpTestConfig.id === 'test1' || window.__mlpTestConfig.id === 'test2') && (wdCond === 'sunny' || wdCond === 'moon')) {
+        iconSvg = _renderMlpWeatherDateMaskIcon(wdCond);
+      } else {
+        iconSvg = WEATHER_INLINE[wdCond] || moonInline;
+      }
 
       // Canonical typography: Inter 24/400/20 line-height
       var textStyle = "font-family:'One UI Sans APP VF', Inter, system-ui, sans-serif;" +
@@ -7462,11 +7712,11 @@ window.renderAtomicForRole = function renderAtomicForRole(comp, rect) {
 
     case 'test1-lock-stack': {
       var tlsWeather = window.renderAtomicForRole(
-        { role: 'weatherDate', variant: { date: 'Sat, May 3', temp: 24, condition: 'moon' } },
+        { role: 'weatherDate', variant: { date: 'Sat, May 3', temp: _getTest1LiveWeatherTemp(), condition: _getMlpDayNightCondition(new Date()) } },
         { w: 173, h: 20 }
       );
       var tlsClock = window.renderAtomicForRole(
-        { role: 'clock', variant: { HH: '03', MM: '23', fontSize: 73, lineHeight: 54, gap: 10 } },
+        { role: 'clock', variant: { fontSize: 73, lineHeight: 54, gap: 10 } },
         { w: 173, h: 120 }
       );
       var tlsWidgets = window.renderAtomicForRole({ role: 'lock-widgets' }, { w: 236, h: 50 });
@@ -7606,7 +7856,7 @@ window.renderAtomicForRole = function renderAtomicForRole(comp, rect) {
             '<p class="test1-home-message__sub">AI 제안 메시지</p>' +
           '</div>' +
           '<div class="test1-home-message__bubble">' +
-            '<p>I\'m on my way.</p><p>Dinner in 20 min?</p>' +
+            '<p>지금 가는중이야.</p><p>20분 뒤 저녁 먹자.</p>' +
           '</div>' +
           '<p class="test1-home-widget__action">보내기</p>' +
         '</div>' +
@@ -11467,9 +11717,19 @@ function _buildCanvasItemWrapper(comp, layout, plan, existing) {
   }
 
   wrapper.style.position = 'absolute';
-  wrapper.style.left = rect.x + 'px';
-  wrapper.style.top = rect.y + 'px';
-  wrapper.style.width = rect.w + 'px';
+  /* test3 status bar: pinned by theme-page.css (384.64×40.86 @ 13.22,19.64).
+     Diff re-renders must not overwrite with topSystem rect (340×38) or the
+     flex bar shrinks horizontally after home/map transitions. */
+  if (isTest3Scope && comp.id === 'status-bar') {
+    wrapper.style.removeProperty('left');
+    wrapper.style.removeProperty('top');
+    wrapper.style.removeProperty('width');
+    wrapper.style.removeProperty('height');
+  } else {
+    wrapper.style.left = rect.x + 'px';
+    wrapper.style.top = rect.y + 'px';
+    wrapper.style.width = rect.w + 'px';
+  }
   /* Entrance capsule: CSS test3MusicWrapperHeight owns #test3-music height (not 218px _rect). */
   if (isTest3Scope && comp.id === 'test3-music') {
     var musicKeepCssHeight = !existing ||
@@ -11480,7 +11740,7 @@ function _buildCanvasItemWrapper(comp, layout, plan, existing) {
     } else {
       wrapper.style.height = rect.h + 'px';
     }
-  } else {
+  } else if (!(isTest3Scope && comp.id === 'status-bar')) {
     wrapper.style.height = rect.h + 'px';
   }
 
@@ -12566,9 +12826,17 @@ var TEST1_VER3_OUT_TRIGGER_MS = Math.max(
 );
 var TEST1_PILL_AI_LOGO_PAUSE_MS = TEST1_PILL_TEXT_B_DELAY_MS;
 var TEST1_CODA_FADE_IN_MS = TEST1_PILL_SHELL_RISE_MS + TEST1_PILL_TEXT_B_DELAY_MS + TEST1_PILL_TEXT_B_DUR_MS + 500;
+var TEST1_PILL_AUTO_HANDOFF_MS = 2000;
+var TEST1_HOME_EXIT_EASE = 'cubic-bezier(0.33, 0, 0.2, 1)';
+var TEST1_HOME_EXIT_MS = 780;
+var TEST1_PILL_AUTO_FADE_MS = TEST1_HOME_EXIT_MS;
+var TEST1_HOME_EXIT_ROLES = [
+  'test1-lock-stack', 'lockIndicator', 'test1-now-bar', 'test1-now-bar-b',
+  'test1-transit-card', 'test1-assist-pill', 'test1-gradient-sweep',
+  'test1-lock-shortcut-l', 'test1-lock-shortcut-r', 'test1-bottom-pill', 'gestureBar'
+];
 var TEST1_STACK_ITEM_GAP_PX = 16;
 var TEST1_STACK_SHIFT_PX = 72 + TEST1_STACK_ITEM_GAP_PX;
-var TEST1_HOME_EXIT_MS = 560;
 var TEST1_HOME_GLOW_HOLD_MS = 2000;
 var TEST1_HOME_CROSSFADE_MS = 2000;
 var TEST1_HOME_EXPAND_MS = 3200;
@@ -12578,6 +12846,27 @@ var TEST1_HOME_GLOW_FADE_MS = 850;
 var TEST1_HOME_FOOD_RISE_MS = TEST1_HOME_EXPAND_MS;
 var TEST1_HOME_FOOD_GLOW_FADE_MS = TEST1_HOME_CROSSFADE_MS;
 var TEST1_HOME_BG_SETTLE_MS = TEST1_HOME_FOOD_RISE_MS + TEST1_HOME_CROSSFADE_MS + 480;
+
+function _syncTest1HomeExitLayers(canvas) {
+  if (!canvas) return;
+  canvas.style.setProperty('--test1-home-exit-dur', TEST1_HOME_EXIT_MS + 'ms');
+  canvas.style.setProperty('--test1-home-exit-ease', TEST1_HOME_EXIT_EASE);
+  for (var r = 0; r < TEST1_HOME_EXIT_ROLES.length; r++) {
+    var role = TEST1_HOME_EXIT_ROLES[r];
+    var nodes = canvas.querySelectorAll('.canvas-item[data-role="' + role + '"]');
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      el.style.removeProperty('transition');
+      el.style.removeProperty('transform');
+      el.style.removeProperty('filter');
+      if (el.style.opacity === '0') el.style.removeProperty('opacity');
+      el.style.removeProperty('visibility');
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.removeProperty('animation');
+    }
+  }
+}
 
 function _runTest1HomeGleamReveal(done) {
   try {
@@ -12767,6 +13056,18 @@ function _clearTest1IntroTimer() {
   if (window.__mlpTest1HomeFoodPulseEndTimer) {
     clearTimeout(window.__mlpTest1HomeFoodPulseEndTimer);
     window.__mlpTest1HomeFoodPulseEndTimer = null;
+  }
+  if (window.__mlpTest1PillAutoHandoffTimer) {
+    clearTimeout(window.__mlpTest1PillAutoHandoffTimer);
+    window.__mlpTest1PillAutoHandoffTimer = null;
+  }
+  if (window.__mlpTest1LiveTimeTimer) {
+    clearInterval(window.__mlpTest1LiveTimeTimer);
+    window.__mlpTest1LiveTimeTimer = null;
+  }
+  if (window.__mlpTest1LiveWeatherPollTimer) {
+    clearInterval(window.__mlpTest1LiveWeatherPollTimer);
+    window.__mlpTest1LiveWeatherPollTimer = null;
   }
   if (window.Test1HomeWidgetFillGL) {
     try { window.Test1HomeWidgetFillGL.destroyAll(); } catch (_) {}
@@ -13512,7 +13813,7 @@ function _runTest1CodaIntro() {
           c2.removeAttribute('data-test1-coda-animate');
           c2.removeAttribute('data-test1-coda-inner-rise');
           if (window.__mlpTestConfig) window.__mlpTestConfig.test1CodaDone = true;
-          _installTest1BottomPillSwipe(c2);
+          _armTest1BottomPillAutoHandoff(c2);
         } catch (_) {}
     }, TEST1_CODA_FADE_IN_MS);
   } catch (_) {}
@@ -13527,7 +13828,7 @@ function _applyTest1HomeStatusBar() {
     var sb = document.getElementById('status-bar');
     if (!sb) return;
     var time = sb.querySelector('.test1-status-bar__time');
-    if (time) time.textContent = '12:45';
+    if (time) time.textContent = _formatTest1StatusTime(new Date());
     var live = sb.querySelector('.test1-status-bar__live');
     if (live) live.style.display = 'none';
   } catch (_) {}
@@ -13542,6 +13843,7 @@ function _runTest1HomeIntro() {
     _restoreTest1LockStackMiddle(c);
     c.removeAttribute('data-test1-pill-swipe-armed');
     c.removeAttribute('data-test1-pill-swipe-out');
+    _syncTest1HomeExitLayers(c);
     c.setAttribute('data-test1-home-prep', '1');
     c.setAttribute('data-test1-home-exit', '1');
     c.removeAttribute('data-test1-coda-run');
@@ -13624,7 +13926,7 @@ window.__mlpTest1GoHome = function __mlpTest1GoHome() {
   return true;
 };
 
-function _installTest1BottomPillSwipe(canvas) {
+function _armTest1BottomPillAutoHandoff(canvas) {
   if (!canvas || canvas.getAttribute('data-test-scope') !== 'test1') return;
   if (canvas.getAttribute('data-test1-pill-swipe-armed')) return;
   if (window.__mlpTestConfig && window.__mlpTestConfig.test1HomeRun) return;
@@ -13634,97 +13936,33 @@ function _installTest1BottomPillSwipe(canvas) {
   var pillEl = document.getElementById('test1-bottom-pill');
   if (!pillEl) return;
   var pillItem = pillEl.closest('.canvas-item') || pillEl;
-  var SWIPE_THRESHOLD = 56;
-  var dragging = false;
-  var swipeFinishing = false;
-  var startX = 0;
-  var lastDx = 0;
+  var handoffFinishing = false;
 
-  function getSlideOffTx(fromDx) {
-    var canvasEl = document.getElementById('canvas');
-    if (!canvasEl) return fromDx - 420;
-    var canvasRect = canvasEl.getBoundingClientRect();
-    var itemRect = pillItem.getBoundingClientRect();
-    var offBy = itemRect.left - canvasRect.left + itemRect.width + 24;
-    return fromDx - offBy;
-  }
-
-  function applyDrag(dx) {
-    lastDx = Math.min(0, dx);
-    pillItem.style.transition = 'none';
-    pillItem.style.opacity = '1';
-    pillItem.style.transform = 'translate3d(' + lastDx + 'px, 0, 0)';
-  }
-
-  function resetDrag() {
-    lastDx = 0;
-    pillItem.style.transition = 'transform 260ms cubic-bezier(0.22, 0.82, 0.24, 1)';
-    pillItem.style.opacity = '1';
-    pillItem.style.transform = 'translate3d(0, 0, 0)';
-  }
-
-  function finishSwipe() {
-    if (swipeFinishing || window.__mlpTest1Transitioning) return;
-    swipeFinishing = true;
-    dragging = false;
-    var targetTx = getSlideOffTx(lastDx);
-    pillItem.style.transition = 'transform 340ms cubic-bezier(0.22, 0.82, 0.24, 1)';
-    pillItem.style.opacity = '1';
-    pillItem.style.transform = 'translate3d(' + targetTx + 'px, 0, 0)';
-    var done = false;
-    function complete() {
-      if (done) return;
-      done = true;
-      pillItem.style.visibility = 'hidden';
-      pillItem.style.pointerEvents = 'none';
-      canvas.setAttribute('data-test1-pill-swipe-out', '1');
-      if (window.__mlpTest1Transitioning) return;
-      window.__mlpTest1Transitioning = true;
-      _runTest1HomeIntro();
+  function finishHandoff() {
+    if (handoffFinishing || window.__mlpTest1Transitioning) return;
+    handoffFinishing = true;
+    if (window.__mlpTest1PillAutoHandoffTimer) {
+      clearTimeout(window.__mlpTest1PillAutoHandoffTimer);
+      window.__mlpTest1PillAutoHandoffTimer = null;
     }
-    pillItem.addEventListener('transitionend', function onEnd(e) {
-      if (e.target !== pillItem || e.propertyName !== 'transform') return;
-      pillItem.removeEventListener('transitionend', onEnd);
-      complete();
-    });
-    setTimeout(complete, 400);
+    if (window.__mlpTest1Transitioning) return;
+    window.__mlpTest1Transitioning = true;
+    _runTest1HomeIntro();
   }
 
-  function onDown(e) {
-    if (swipeFinishing || window.__mlpTest1Transitioning || window.__mlpTestConfig.test1HomeRun) return;
-    dragging = true;
-    startX = e.clientX;
-    if (pillItem.setPointerCapture) {
-      try { pillItem.setPointerCapture(e.pointerId); } catch (_) {}
-    }
+  if (window.__mlpTest1PillAutoHandoffTimer) {
+    clearTimeout(window.__mlpTest1PillAutoHandoffTimer);
   }
-
-  function onMove(e) {
-    if (!dragging || swipeFinishing) return;
-    applyDrag(e.clientX - startX);
-  }
-
-  function onUp(e) {
-    if (!dragging || swipeFinishing) return;
-    dragging = false;
-    if (pillItem.releasePointerCapture) {
-      try { pillItem.releasePointerCapture(e.pointerId); } catch (_) {}
-    }
-    var dx = e.clientX - startX;
-    if (dx < -SWIPE_THRESHOLD) {
-      finishSwipe();
-    } else {
-      resetDrag();
-    }
-  }
-
-  pillItem.style.setProperty('pointer-events', 'auto', 'important');
-  pillItem.style.touchAction = 'pan-y';
-  pillItem.style.cursor = 'grab';
-  pillItem.addEventListener('pointerdown', onDown);
-  pillItem.addEventListener('pointermove', onMove);
-  pillItem.addEventListener('pointerup', onUp);
-  pillItem.addEventListener('pointercancel', onUp);
+  window.__mlpTest1PillAutoHandoffTimer = setTimeout(function () {
+    window.__mlpTest1PillAutoHandoffTimer = null;
+    try {
+      var c = document.getElementById('canvas');
+      if (!c || c.getAttribute('data-test-scope') !== 'test1') return;
+      if (window.__mlpTestConfig && window.__mlpTestConfig.test1HomeRun) return;
+      if (!c.getAttribute('data-test1-coda-done')) return;
+      finishHandoff();
+    } catch (_) {}
+  }, TEST1_PILL_AUTO_HANDOFF_MS);
 }
 
 function _armTest1StackDelay(canvas) {
@@ -14176,17 +14414,19 @@ window.generateSurfaceScenario = function generateSurfaceScenario(surfaceType) {
       if (canvas.getAttribute('data-test1-coda-done') && !(window.__mlpTestConfig && window.__mlpTestConfig.test1HomeRun)) {
         _restoreTest1LockStackMiddle(canvas);
         _ensureTest1BottomPillTextBDone(canvas);
-        _installTest1BottomPillSwipe(canvas);
+        _armTest1BottomPillAutoHandoff(canvas);
       }
       if (canvas.getAttribute('data-test1-home-run')) {
         _applyTest1HomeStatusBar();
       }
+      _ensureTest1LiveTimeTick();
     } catch (_) {}
   }
   if (testScope === 'test2') {
     try {
       installTest2P2TransitionBridge(canvas);
       installTest2GalaxyStar(canvas);
+      _ensureTest2LiveTimeTick();
     } catch (_) {}
     window.__test2FillGlBindSuspended = false;
     requestAnimationFrame(function () {
@@ -14195,6 +14435,11 @@ window.generateSurfaceScenario = function generateSurfaceScenario(surfaceType) {
         window.P2AgentFillGL.ensureBound();
       }
     });
+  }
+  if (testScope === 'test3') {
+    try {
+      _ensureTest3LiveTimeTick();
+    } catch (_) {}
   }
 
 
