@@ -19638,6 +19638,14 @@
     font-display: swap;
   }
 
+  @font-face {
+    font-family: 'Pretendard R';
+    src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/packages/pretendard/dist/web/static/woff2/Pretendard-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
   #canvas[data-test-scope="test1"] .test1-bottom-pill {
     display: block;
     position: relative;
@@ -21054,11 +21062,9 @@
   @keyframes test1HomeBottomExit {
     0% {
       opacity: 1;
-      transform: none;
     }
     100% {
       opacity: 0;
-      transform: none;
       visibility: hidden;
     }
   }
@@ -21809,8 +21815,9 @@
     background: #669C9D;
     mix-blend-mode: normal;
     color: #fff;
-    font-family: 'Pretendard', var(--font), sans-serif;
+    font-family: 'Pretendard R', var(--font), sans-serif;
     font-weight: 400;
+    font-synthesis: none;
     font-size: 11.8px;
     line-height: 1.25;
     flex: 0 0 auto;
@@ -21828,6 +21835,9 @@
   }
   #canvas[data-test-scope="test1"] .test1-home-message__bubble p {
     margin: 0;
+    font-family: inherit;
+    font-weight: 400;
+    font-synthesis: none;
   }
 
   #canvas[data-test-scope="test1"] .test1-home-food .test1-home-widget__inner {

@@ -12857,7 +12857,6 @@ function _syncTest1HomeExitLayers(canvas) {
     for (var i = 0; i < nodes.length; i++) {
       var el = nodes[i];
       el.style.removeProperty('transition');
-      el.style.removeProperty('transform');
       el.style.removeProperty('filter');
       if (el.style.opacity === '0') el.style.removeProperty('opacity');
       el.style.removeProperty('visibility');
@@ -13417,6 +13416,46 @@ function _armTest1CodaAfterStack(canvas) {
   }, TEST1_AFTER_STACK_MS);
 }
 
+function _freezeTest1StackMiddleForHomeExit(canvas) {
+  if (!canvas || canvas.getAttribute('data-test-scope') !== 'test1') return;
+  if (window.__mlpTest1LockStackOutAnims && window.__mlpTest1LockStackOutAnims.length) {
+    window.__mlpTest1LockStackOutAnims.forEach(function (anim) {
+      try {
+        if (anim) {
+          anim.commitStyles();
+          anim.cancel();
+        }
+      } catch (_) {}
+    });
+    window.__mlpTest1LockStackOutAnims = [];
+  }
+  canvas.removeAttribute('data-test1-lock-stack-out');
+  ['test1-now-bar-b', 'test1-now-bar', 'test1-transit-card'].forEach(function (id) {
+    var el = canvas.querySelector('#' + id);
+    if (!el) return;
+    el.getAnimations().forEach(function (anim) {
+      try {
+        if (anim) {
+          anim.commitStyles();
+          anim.cancel();
+        }
+      } catch (_) {}
+    });
+    el.style.transition = 'none';
+    var tf = window.getComputedStyle(el).transform;
+    if (tf && tf !== 'none') {
+      el.style.transform = tf;
+    } else if (id === 'test1-now-bar' && canvas.getAttribute('data-test1-stack-run')) {
+      el.style.transform = 'translate3d(0, ' + TEST1_LOCK_STACK_SHIFT_PX + 'px, 0)';
+    }
+    el.style.removeProperty('will-change');
+    if (el.style.opacity === '0') {
+      el.style.opacity = '1';
+      el.style.visibility = 'visible';
+    }
+  });
+}
+
 function _restoreTest1LockStackMiddle(canvas) {
   if (!canvas || canvas.getAttribute('data-test-scope') !== 'test1') return;
   if (window.__mlpTest1LockStackOutAnims && window.__mlpTest1LockStackOutAnims.length) {
@@ -13840,7 +13879,7 @@ function _runTest1HomeIntro() {
     if (!c || c.getAttribute('data-test-scope') !== 'test1') return;
     if (window.__mlpTestConfig && window.__mlpTestConfig.test1RevealAll) return;
     if (c.getAttribute('data-test1-home-run')) return;
-    _restoreTest1LockStackMiddle(c);
+    _freezeTest1StackMiddleForHomeExit(c);
     c.removeAttribute('data-test1-pill-swipe-armed');
     c.removeAttribute('data-test1-pill-swipe-out');
     _syncTest1HomeExitLayers(c);
